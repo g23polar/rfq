@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RFQ-to-Quote: supplier catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* The stock ledger behind the review bench. Same materials: graphite, steel, one oxide accent.
+   Hazard-striped columns are internal and never reach a buyer. */
+:root{
+  --bg:#14171a; --panel:#1c2024; --raise:#252a2f; --line:#343b42; --ink:#ece7dc; --dim:#98a1a9;
+  --oxide:#f0622a; --ok:#7fd1a0; --warn:#f2c14e;
+  --display:'Big Shoulders Display','Oswald','Arial Narrow',sans-serif;
+  --body:'IBM Plex Sans','Segoe UI','Helvetica Neue',sans-serif;
+  --mono:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
+  --stripes:repeating-linear-gradient(135deg,rgba(240,98,42,.9) 0 6px,#14171a 6px 12px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 var(--body);
+  background-image:radial-gradient(1200px 500px at 85% -10%,rgba(240,98,42,.10),transparent 60%)}
+button,input{font:inherit;color:inherit}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  padding:26px 30px 16px;border-bottom:2px solid var(--ink)}
+h1{font:800 56px/.9 var(--display);text-transform:uppercase;letter-spacing:.01em;margin:0}
+h1 span{color:var(--oxide)}
+h1 small{display:block;margin-top:10px;font:500 11px/1.5 var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.btn{background:var(--raise);border:1px solid var(--line);padding:8px 12px;font:600 11px/1 var(--mono);letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;color:var(--ink);text-decoration:none;display:inline-block;transition:border-color .15s}
+.btn:hover{border-color:var(--oxide)}
+.tools{position:sticky;top:0;z-index:3;background:rgba(20,23,26,.94);backdrop-filter:blur(6px);
+  padding:14px 30px;border-bottom:1px solid var(--line);display:flex;gap:18px 26px;flex-wrap:wrap;align-items:center}
+.tools input[type=search]{background:#111417;border:1px solid var(--line);padding:9px 12px;width:300px;font:13px var(--mono)}
+.tools input[type=search]:focus{outline:1px solid var(--oxide);border-color:var(--oxide)}
+.group{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.group b{font:600 10px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-right:4px}
+.chip{background:transparent;border:1px solid var(--line);padding:5px 9px;font:500 12px/1.2 var(--mono);cursor:pointer;
+  transition:background .12s,border-color .12s,color .12s}
+.chip:hover{border-color:var(--oxide)}
+.chip.on{background:var(--ink);color:#14171a;border-color:var(--ink)}
+.count{margin-left:auto;font:800 28px/1 var(--display);letter-spacing:.04em}
+.count small{font:500 10px/1 var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-left:8px}
+.legend{padding:10px 30px 0;font:12px/1.6 var(--mono);color:var(--dim);display:flex;gap:22px;flex-wrap:wrap}
+.legend i{display:inline-block;width:22px;height:10px;margin-right:8px;vertical-align:-1px}
+.wrap{padding:8px 30px 80px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:1100px}
+th{text-align:left;font:600 10px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  padding:14px 10px 8px;border-bottom:2px solid var(--ink);cursor:pointer;white-space:nowrap;user-select:none}
+th:hover{color:var(--ink)}
+th.sorted{color:var(--oxide)}
+th.num,td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap}
+td.desc{white-space:normal;min-width:230px}
+td.sup{white-space:normal;min-width:110px}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:var(--panel)}
+tbody tr.target{background:rgba(240,98,42,.14);box-shadow:inset 4px 0 0 var(--oxide)}
+.sku{font:500 12.5px/1.5 var(--mono);white-space:nowrap}
+.desc{font-weight:600}
+.desc small{display:block;font:400 12px/1.5 var(--mono);color:var(--dim)}
+.tag{display:inline-block;padding:1px 6px;border:1px solid var(--c,var(--line));color:var(--c,var(--dim));
+  font:600 9.5px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+td.int,th.int{background-image:linear-gradient(rgba(240,98,42,.06),rgba(240,98,42,.06))}
+th.int{background:var(--stripes) top/100% 5px no-repeat,linear-gradient(rgba(240,98,42,.06),rgba(240,98,42,.06))}
+.low{color:var(--oxide);font-weight:600}
+.none{padding:60px 0;text-align:center;color:var(--dim)}
+.rise{animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Supplier <span>catalog</span><small id="label">Loading</small></h1>
+  <a class="btn" href="/">&#8592; Review bench</a>
+</header>
+
+<div class="tools">
+  <input type="search" id="q" placeholder="Search SKU, description, grade, standard" autocomplete="off">
+  <div class="group" id="materials"><b>Material</b></div>
+  <div class="group" id="forms"><b>Form</b></div>
+  <div class="group"><b>Show only</b>
+    <button class="chip" data-flag="stock">In stock</button>
+    <button class="chip" data-flag="dfars">DFARS-qualifying melt</button>
+    <button class="chip" data-flag="floor">Under margin floor</button>
+  </div>
+  <div class="count"><span id="shown">0</span><small id="of">items</small></div>
+</div>
+<p class="legend">
+  <span><i style="background:var(--stripes)"></i>Internal columns: cost, margin and supplier never reach a buyer</span>
+  <span>MTR: mill test report. Market: benchmark range. Price: what the pricing rule quotes. Click a heading to sort.</span>
+</p>
+
+<div class="wrap">
+  <table>
+    <thead><tr id="head"></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <p class="none" id="none" hidden>No item matches those filters.</p>
+</div>
+
+<script>
+const COLS = [
+  {key: "sku", label: "SKU"},
+  {key: "description", label: "Item"},
+  {key: "standard", label: "Standard"},
+  {key: "stock_qty", label: "Stock", num: true},
+  {key: "lead_time_days", label: "Lead, d", num: true},
+  {key: "country_of_melt", label: "Melted in"},
+  {key: "mtr_available", label: "MTR"},
+  {key: "mid", label: "Market $/lb", num: true, sort: (i) => i.benchmark ? i.benchmark.mid : 0},
+  {key: "target_price_per_lb", label: "Price $/lb", num: true},
+  {key: "cost_per_lb", label: "Cost $/lb", num: true, internal: true},
+  {key: "margin_at_target_pct", label: "Margin", num: true, internal: true},
+  {key: "supplier", label: "Supplier", internal: true},
+];
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const n = (v, d = 2) => v == null ? "" : Number(v).toFixed(d);
+let data = {items: [], margin_floor_pct: 0}, sortKey = "sku", sortDir = 1;
+const filters = {q: "", material: new Set(), form: new Set(), stock: false, dfars: false, floor: false};
+
+function shown() {
+  const q = filters.q.toLowerCase();
+  return data.items.filter((i) =>
+    (!q || [i.sku, i.description, i.grade, i.standard, i.finish, i.supplier, ...i.certifications, ...i.customer_parts].join(" ").toLowerCase().includes(q)) &&
+    (!filters.material.size || filters.material.has(i.material)) &&
+    (!filters.form.size || filters.form.has(i.form)) &&
+    (!filters.stock || i.stock_qty > 0) && (!filters.dfars || i.dfars_qualifying) &&
+    (!filters.floor || (i.margin_at_target_pct != null && i.margin_at_target_pct < data.margin_floor_pct)));
+}
+
+function render() {
+  const col = COLS.find((c) => c.key === sortKey), get = col.sort || ((i) => i[sortKey]);
+  const rows = shown().sort((a, b) => {
+    const x = get(a), y = get(b);
+    return (typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""))) * sortDir;
+  });
+  const target = decodeURIComponent(location.hash.slice(1));
+  $("#head").innerHTML = COLS.map((c) => `<th class="${c.num ? "num" : ""} ${c.internal ? "int" : ""} ${c.key === sortKey ? "sorted" : ""}" data-key="${c.key}">${c.label}${c.key === sortKey ? (sortDir > 0 ? " &#9650;" : " &#9660;") : ""}</th>`).join("");
+  $("#rows").innerHTML = rows.map((i) => {
+    const under = i.margin_at_target_pct != null && i.margin_at_target_pct < data.margin_floor_pct;
+    const mtr = {yes: ["available", "var(--ok)"], no: ["none", "var(--oxide)"], unknown: ["unknown", "var(--warn)"]}[i.mtr_available];
+    return `<tr id="${esc(i.sku)}" class="${i.sku === target ? "target" : ""}">
+      <td class="sku">${esc(i.sku)}</td>
+      <td class="desc">${esc(i.description)}<small>${esc(i.grade)} &middot; ${esc(i.form.replace("_", " "))}${i.finish ? " &middot; " + esc(i.finish) : ""}${i.customer_parts.length ? " &middot; customer part " + esc(i.customer_parts.join(", ")) : ""}</small></td>
+      <td>${esc(i.standard)}</td>
+      <td class="num ${i.stock_qty === 0 ? "low" : ""}">${i.stock_qty}</td>
+      <td class="num">${i.lead_time_days}</td>
+      <td><span class="tag" style="--c:${i.dfars_qualifying ? "var(--ok)" : "var(--oxide)"}">${esc(i.country_of_melt)} &middot; ${i.dfars_qualifying ? "DFARS ok" : "not DFARS"}</span></td>
+      <td><span class="tag" style="--c:${mtr[1]}">${mtr[0]}</span></td>
+      <td class="num">${i.benchmark ? `${n(i.benchmark.low)}&ndash;${n(i.benchmark.high)}` : "none"}</td>
+      <td class="num">${n(i.target_price_per_lb, 4)}</td>
+      <td class="num int">${n(i.cost_per_lb, 4)}</td>
+      <td class="num int ${under ? "low" : ""}">${i.margin_at_target_pct == null ? "" : n(i.margin_at_target_pct, 1) + "%"}${under ? " &#9888;" : ""}</td>
+      <td class="int sup">${esc(i.supplier)}</td></tr>`;
+  }).join("");
+  $("#shown").textContent = rows.length;
+  $("#of").textContent = `of ${data.items.length} items`;
+  $("#none").hidden = rows.length > 0;
+  document.querySelectorAll("th").forEach((th) => th.onclick = () => {
+    if (sortKey === th.dataset.key) sortDir = -sortDir; else { sortKey = th.dataset.key; sortDir = 1; }
+    render();
+  });
+}
+
+function chips(el, values, set) {
+  values.forEach((v) => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = v.replace("_", " ");
+    b.onclick = () => { set.has(v) ? set.delete(v) : set.add(v); b.classList.toggle("on"); render(); };
+    el.appendChild(b);
+  });
+}
+
+(async () => {
+  try {
+    data = await (await fetch("/api/catalog")).json();
+  } catch (e) {
+    $("#label").textContent = "The catalog could not be loaded. Is the server running?";
+    return;
+  }
+  $("#label").textContent = `${data.label}. Margin floor ${data.margin_floor_pct}%.`;
+  chips($("#materials"), [...new Set(data.items.map((i) => i.material))], filters.material);
+  chips($("#forms"), [...new Set(data.items.map((i) => i.form))], filters.form);
+  $("#q").oninput = (e) => { filters.q = e.target.value; render(); };
+  document.querySelectorAll("[data-flag]").forEach((b) => b.onclick = () => {
+    filters[b.dataset.flag] = !filters[b.dataset.flag]; b.classList.toggle("on"); render();
+  });
+  render();
+  $("#rows").classList.add("rise");
+  const row = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  if (row) window.scrollTo(0, Math.max(0, row.getBoundingClientRect().top + window.scrollY - window.innerHeight / 2));
+})();
+</script>
+</body>
+</html>

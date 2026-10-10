@@ -65,3 +65,19 @@ def test_review_screen_is_served_and_wired_to_the_api(client):
     for path in ("/api/samples/", "/api/rfq", "/approve", "/quote/"):
         assert path in page.text
     assert "esc(" in page.text  # RFQ text is untrusted and is escaped before it is shown
+
+
+def test_catalog_view_and_its_data(client):
+    data = client.get("/api/catalog").json()
+    assert "SYNTHETIC" in data["label"] and data["margin_floor_pct"] == 12
+    items = {i["sku"]: i for i in data["items"]}
+    assert len(items) > 50
+    india = items["SS-316L-RB-1500-144"]  # the seeded item behind the sample email's no bid
+    assert india["country_of_melt"] == "IN" and india["dfars_qualifying"] is False
+    assert items["SS-304L-SHT-0625-48X96"]["dfars_qualifying"] is True
+    under = [s for s, i in items.items() if i["margin_at_target_pct"] < data["margin_floor_pct"]]
+    assert under == ["SS-316L-PLT-2500-48X96"]  # the seeded below-floor item
+    assert items["SS-304L-RB-1000-144"]["customer_parts"] == ["Acme Fabrication: 88213"]
+    page = client.get("/catalog")
+    assert page.status_code == 200 and "/api/catalog" in page.text and "esc(" in page.text
+    assert "/catalog" in client.get("/").text

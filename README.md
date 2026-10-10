@@ -112,7 +112,7 @@ uv run uvicorn rfq.app:app
 
 To record runs to PRISM as well, add `PRISMTRACE_API_KEY` and `PRISMTRACE_PROJECT_ID` to `.env`.
 
-Open http://127.0.0.1:8000 for the review screen: drop in an RFQ, paste one, or load a sample, then expand any line and approve the quote.
+Open http://127.0.0.1:8000 for the review screen: drop in an RFQ, paste one, or load a sample, then expand any line and approve the quote. Each matched item links to its row in the supplier catalog at http://127.0.0.1:8000/catalog, so you can see the stock, country of melt and cost behind an answer.
 
 The same things are available from the API:
 
@@ -134,6 +134,7 @@ Each call returns the draft with an `rfq_id`. Open `http://127.0.0.1:8000/quote/
 | `POST /api/samples/{email\|pdf}` | A draft from a bundled sample |
 | `GET /api/rfq/{rfq_id}` | The full draft, including what only the specialist sees |
 | `GET /` | The review screen |
+| `GET /catalog` | The supplier catalog: every item with its stock, origin, market range and the price the rule quotes |
 | `GET /quote/{rfq_id}` | The buyer-facing quote page |
 | `GET /api/rfq/{rfq_id}/summary` | What needs the specialist's judgment |
 | `GET /api/rfq/{rfq_id}/trace` | Every stage and model call behind the draft (the same trace PRISM receives) |

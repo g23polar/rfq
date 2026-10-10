@@ -53,6 +53,7 @@ Internal-only values (cost, margin, review notes) are visually marked so it is o
 - Links: `/#sample-email` and `/#sample-pdf` run a sample on load; `/#<rfq_id>` reopens a draft held by the running server.
 - Approve posts to the API; the button reads "Approve as partial" when lines are open and is disabled, with the reason, if the leak check failed.
 - It talks to the live API only; the static rendering of `fixtures/sample_run.json` (step 1 of the plan) was skipped because the API already existed.
+- **Supplier catalog view** (added on request, not in the original plan): `src/rfq/static/catalog.html` at `/catalog`, fed by `GET /api/catalog`. One row per catalog item: SKU, item, standard, stock, lead time, country of melt with whether it qualifies for DFARS, mill test report availability, the market range and the price the pricing rule quotes. Cost, margin at that price and supplier are in hazard-striped internal columns; a margin under the floor is flagged. Search, filter chips (material, form, in stock, DFARS-qualifying, under the floor) and click-to-sort. `/catalog#<sku>` highlights and scrolls to an item; each matched item on the review screen links there.
 - Not built (stretch): editing a line. The PRISM trace id is shown when a run was recorded, without a dashboard link (URL format unknown).
 
 ## Out of scope

@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from rfq import pipeline, render
 from rfq.models import Run
+from rfq.reference import SYNTHETIC_LABEL, load_reference
 
 load_dotenv(".env")
 
@@ -107,6 +108,32 @@ def summary(rfq_id: str) -> str:
 @app.get("/quote/{rfq_id}", response_class=HTMLResponse)
 def quote(rfq_id: str) -> str:
     return render.quote_html(_run(rfq_id))
+
+
+@app.get("/api/catalog")
+def catalog() -> dict:
+    """The supplier catalog as the rule stages see it, with what pricing and compliance derive
+    from each item. For the specialist only: it includes cost and supplier."""
+    ref = load_reference()
+    pricing, qualifying = ref.rules.pricing, set(ref.rules.dfars.qualifying_countries)
+    parts: dict[str, list[str]] = {}
+    for x in ref.cross_references:
+        parts.setdefault(x.sku, []).append(f"{x.customer}: {x.customer_part_no}")
+    items = []
+    for item in ref.catalog:
+        benchmark = ref.benchmark_for(item.grade, item.form)
+        target = round(benchmark.mid * pricing.target_multiplier_of_benchmark_mid, 4) if benchmark else None
+        items.append({
+            **item.model_dump(), "benchmark": benchmark, "target_price_per_lb": target,
+            "margin_at_target_pct": round((target - item.cost_per_lb) / target * 100, 1) if target else None,
+            "dfars_qualifying": item.country_of_melt in qualifying,
+            "customer_parts": parts.get(item.sku, [])})
+    return {"label": SYNTHETIC_LABEL, "margin_floor_pct": pricing.margin_floor_pct, "items": items}
+
+
+@app.get("/catalog", response_class=HTMLResponse)
+def catalog_page() -> str:
+    return (ROOT / "static" / "catalog.html").read_text()
 
 
 @app.get("/", response_class=HTMLResponse)

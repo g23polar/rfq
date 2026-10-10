@@ -137,6 +137,8 @@ ul.issues b{font:600 9.5px/1 var(--mono);letter-spacing:.14em;text-transform:upp
   text-transform:uppercase;padding:4px 8px;margin-bottom:8px}
 .offer h4{margin:0;font:600 15px/1.35 var(--body)}
 .offer .sku{font:12px/1.6 var(--mono);color:var(--dim)}
+.offer .sku a{color:var(--dim);text-decoration:none;border-bottom:1px dotted var(--dim)}
+.offer .sku a:hover{color:var(--oxide);border-color:var(--oxide)}
 .offer p{margin:8px 0 0;font-size:13px;color:#cfc9bd}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:10px 0 0;font:13px/1.5 var(--mono)}
 .kv dt{color:var(--dim)}.kv dd{margin:0;text-align:right}
@@ -193,6 +195,7 @@ a.btn{color:var(--ink);text-decoration:none;display:inline-block}
     </div>
 
     <div id="side"></div>
+    <div><a class="btn" href="/catalog" target="_blank" rel="noopener">Supplier catalog &#8599;</a></div>
     <p class="synthetic">Demonstration. The catalog, stock, costs and market benchmarks are synthetic data, not real offers.</p>
   </aside>
 
@@ -340,7 +343,7 @@ function offerCard(o, many) {
       <dt>Margin</dt><dd style="color:${p.margin_pct < p.floor_margin_pct ? "var(--oxide)" : "var(--ok)"}">${p.margin_pct}%</dd>
       <dt>Margin floor</dt><dd>${p.floor_margin_pct}%</dd></dl></div>` : `<p style="color:var(--warn)">Not priced.</p>`;
   return `<div class="offer">${many ? `<span class="opt">${esc(o.label)}</span>` : ""}
-    ${c ? `<h4>${esc(c.description)}</h4><div class="sku">${esc(c.sku)}</div>
+    ${c ? `<h4>${esc(c.description)}</h4><div class="sku"><a href="/catalog#${encodeURIComponent(c.sku)}" target="_blank" rel="noopener" title="Open this item in the supplier catalog">${esc(c.sku)} &#8599;</a></div>
       <div class="chips"><span>match ${(c.strength * 100).toFixed(0)}%</span><span>found by ${c.via === "cross_reference" ? "customer part number" : "specification"}</span>
       ${c.paths_agree === true ? `<span style="color:var(--ok)">two models agree</span>` : c.paths_agree === false ? `<span style="color:var(--oxide)">models disagree</span>` : ""}
       <span>${esc(availability(o.availability, unit))}</span></div>
