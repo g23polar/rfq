@@ -39,7 +39,7 @@ from rfq.llm import CallRecord, capture
 log = logging.getLogger(__name__)
 
 AGENT_NAME = "rfq-to-quote"
-AGENT_ID = "rfq-to-quote-agent"
+AGENT_ID = AGENT_NAME  # one identity: PRISM makes a separate agent per distinct id
 DEFAULT_HOST = "https://prism.blockconvey.com"
 MAX_TEXT = 10000  # the SDK truncates span text to this
 TIMEOUT_S = 15
