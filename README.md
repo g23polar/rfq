@@ -40,6 +40,9 @@ A language model splits the RFQ into lines, reads each line into fields, and wor
 **Every value has a source.**
 Each field the model reads must quote the RFQ text it came from. If the quoted text isn't actually in the RFQ, the value is thrown away. Anything inferred, such as "4x8" meaning feet, is listed on the quote as an assumption.
 
+**Two models from different labs read every line, and they have to agree.**
+A second model, from a different lab than the first, reads each line on its own with the same instructions and the same source-text check. Both readings go through the same standardizing rules, and the results are compared on everything that changes the quote: material, grade, form, every dimension, quantity and unit, and customer part number. If they differ on any of it, the line is held for the specialist with both readings side by side ("grade: 304 / 304H"), and nothing is quoted on either model's word. Differences in how a model wrote a value down ("16" and "ga" vs "16ga", "4x8" vs "48 in x 96 in") cancel out in standardizing, so only disagreements that matter are raised. Confidence here is agreement between independent readings, not a number a model reports about itself.
+
 **It answers every line, and says how sure it is.**
 
 | Order | Status | What the buyer sees |
@@ -103,6 +106,7 @@ git clone https://github.com/g23polar/rfq.git
 cd rfq
 uv sync
 echo "NICRRON_API_KEY=sk-af-..." > .env
+echo "RFQ_JURY_MODEL=<a non-Anthropic model ID from NicrronNinoo>" >> .env   # optional: the second reader
 uv run uvicorn rfq.app:app
 ```
 
@@ -139,7 +143,7 @@ Interactive API documentation is at `/docs`. The sample email takes about 11 sec
 
 ## Built with
 
-- **[NicrronNinoo](https://nicrron.ai/)** for all model access, through one OpenAI-compatible gateway: Claude Sonnet 5 reads the RFQ, Claude Haiku 4.5 screens for manipulation and words the questions.
+- **[NicrronNinoo](https://nicrron.ai/)** for all model access, through one OpenAI-compatible gateway: Claude Sonnet 5 reads the RFQ, Claude Haiku 4.5 screens for manipulation and words the questions, and a model from a different lab (set by `RFQ_JURY_MODEL`) reads every line a second time so the two can be checked against each other.
 - **[Block Convey PRISM](https://blockconvey.com/)** for observability. Every run is recorded to PRISM as one trace under a single agent name: each stage, each line, and every model call with its prompt, reply, token counts and latency. Recording is optional; without PRISM keys the agent behaves the same and keeps the trace locally.
 - **Python**, FastAPI and pydantic. The review screen and the buyer quote are each a single self-contained page, with no build step.
 

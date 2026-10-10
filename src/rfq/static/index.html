@@ -219,7 +219,7 @@ const ISSUE = {
   ambiguous_options: "Ambiguous", tie: "Tie", substitution: "Substitute offered",
   open_question: "Open question", assumption: "Assumed", no_match: "No match",
   unmet_requirement: "Requirement not met", below_floor: "Under margin floor", weak_match: "Weak match",
-  paths_disagree: "Matching paths disagree", withheld_text: "Text withheld", unconfirmed: "Cannot confirm",
+  paths_disagree: "Two readers disagree", withheld_text: "Text withheld", unconfirmed: "Cannot confirm",
   verification_failed: "Verification failed", model_failed: "Step failed",
   price_out_of_range: "Price out of range", stale_benchmark: "Stale benchmark",
 };
@@ -342,6 +342,7 @@ function offerCard(o, many) {
   return `<div class="offer">${many ? `<span class="opt">${esc(o.label)}</span>` : ""}
     ${c ? `<h4>${esc(c.description)}</h4><div class="sku">${esc(c.sku)}</div>
       <div class="chips"><span>match ${(c.strength * 100).toFixed(0)}%</span><span>found by ${c.via === "cross_reference" ? "customer part number" : "specification"}</span>
+      ${c.paths_agree === true ? `<span style="color:var(--ok)">two models agree</span>` : c.paths_agree === false ? `<span style="color:var(--oxide)">models disagree</span>` : ""}
       <span>${esc(availability(o.availability, unit))}</span></div>
       ${(c.differences || []).length ? `<p>${c.differences.map(esc).join("; ")}</p>` : ""}` : "<h4>No catalog item</h4>"}
     ${priceBlock}${comp ? `<ul class="comp">${comp}</ul>` : ""}</div>`;

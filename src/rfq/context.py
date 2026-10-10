@@ -9,6 +9,7 @@ Stage order and entry points:
 
     standardize.standardize  reading -> line.spec, issues                    (task 08)
     match.resolve            spec -> line.offers (label, spec, candidate)    (task 09)
+    jury.cross_check         second_reading -> line.jury, paths_disagree     (model jury)
     availability.check       offers -> offer.availability                    (task 19)
     price.price              offers -> offer.price                           (task 10)
     compliance.check         offers -> offer.compliance                      (task 11)

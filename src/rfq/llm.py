@@ -27,6 +27,14 @@ MODEL_OPTIONS: dict[str, dict] = {MODEL_READ: {}, MODEL_FAST: {"temperature": 0}
 MAX_TOKENS = 2000
 TIMEOUT_S = 60
 
+
+def jury_model() -> str | None:
+    """The second model that reads every line independently (interpret.py, jury.py), named
+    by RFQ_JURY_MODEL. It should come from a different lab than MODEL_READ, so the two don't
+    share the same blind spots. Unset means the jury is off. Read at call time, so a value
+    loaded from .env after import still counts."""
+    return os.environ.get("RFQ_JURY_MODEL", "").strip() or None
+
 T = TypeVar("T", bound=BaseModel)
 
 

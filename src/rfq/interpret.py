@@ -7,6 +7,10 @@ expands shorthand or fills a default; that is task 08.
 
     line = interpret(line, terms)
     lines = interpret_all(lines, terms)   # concurrent; llm calls are synchronous
+
+When RFQ_JURY_MODEL names a second model, it reads the same line with the same prompt at the
+same time, and its verified reading is kept in `Line.second_reading` for jury.py to compare.
+If the second model fails, the line carries on with the first reading alone.
 """
 import contextvars
 import logging
@@ -14,7 +18,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from pydantic import BaseModel, Field
 
-from rfq.llm import MODEL_READ, ModelCallError, call_json
+from rfq.llm import MODEL_READ, ModelCallError, call_json, jury_model
 from rfq.models import Discarded, Line, Reading, Source, Sourced, Terms, issue
 
 log = logging.getLogger(__name__)
@@ -133,16 +137,7 @@ def _prompt(line: Line, terms: Terms) -> str:
     return f"<line>\n{line.segment.text}\n</line>\n<rfq_terms>\n{terms_block}\n</rfq_terms>"
 
 
-def interpret(line: Line, terms: Terms) -> Line:
-    """Add a verified `Reading` to an item line. Other segments pass through unchanged."""
-    if line.segment.kind != "item":
-        return line
-    try:
-        raw = call_json(SYSTEM, _prompt(line, terms), LineReading, MODEL_READ).value
-    except ModelCallError as e:
-        return line.model_copy(update={"issues": [
-            *line.issues, issue("model_failed", f"Interpreting the line failed: {e}")]})
-
+def _verified(raw: LineReading, line: Line, terms: Terms) -> Reading:
     texts = _terms_texts(terms)
     reading = Reading()
     for field in SINGLE + LISTS:
@@ -157,7 +152,39 @@ def interpret(line: Line, terms: Terms) -> Line:
                 getattr(reading, field).append(checked)
             else:
                 setattr(reading, field, checked)
-    return line.model_copy(update={"reading": reading})
+    return reading
+
+
+def _read(line: Line, terms: Terms, model: str) -> Reading:
+    """One model's verified reading of the line. Raises ModelCallError."""
+    raw = call_json(SYSTEM, _prompt(line, terms), LineReading, model).value
+    return _verified(raw, line, terms)
+
+
+def interpret(line: Line, terms: Terms) -> Line:
+    """Add a verified `Reading` to an item line, plus the jury model's reading when one is
+    configured. Other segments pass through unchanged."""
+    if line.segment.kind != "item":
+        return line
+    second_model = jury_model()
+    second = None
+    if second_model:
+        pool = ThreadPoolExecutor(max_workers=1)
+        second = pool.submit(contextvars.copy_context().run, _read, line, terms, second_model)
+        pool.shutdown(wait=False)
+    try:
+        reading = _read(line, terms, MODEL_READ)
+    except ModelCallError as e:
+        return line.model_copy(update={"issues": [
+            *line.issues, issue("model_failed", f"Interpreting the line failed: {e}")]})
+    update = {"reading": reading}
+    if second is not None:
+        try:
+            update["second_reading"] = second.result()
+        except ModelCallError as e:
+            log.warning("jury model %s could not read line %s: %s", second_model,
+                        line.buyer_line_no, e)
+    return line.model_copy(update=update)
 
 
 def interpret_all(lines: list[Line], terms: Terms, workers: int = 8) -> list[Line]:

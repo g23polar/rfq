@@ -222,6 +222,15 @@ class Question(BaseModel):
     blocking: bool = True  # False when the line is already priced
 
 
+class JuryResult(BaseModel):
+    """A second, independent reading of the line by a model from a different lab, compared
+    with the first after both are standardized. Internal: never in buyer-facing output."""
+
+    model: str
+    agreed: bool
+    differences: list[str] = Field(default_factory=list)  # "grade: 304 / 304L"
+
+
 class Verification(BaseModel):
     passed: bool
     failures: list[str] = Field(default_factory=list)
@@ -240,6 +249,8 @@ class Line(BaseModel):
     buyer_line_no: str
     segment: Segment
     reading: Reading | None = None
+    second_reading: Reading | None = None  # the jury model's reading, when it ran
+    jury: JuryResult | None = None
     spec: Spec | None = None
     issues: list[Issue] = Field(default_factory=list)
     offers: list[Offer] = Field(default_factory=list)

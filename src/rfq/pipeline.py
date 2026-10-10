@@ -17,8 +17,8 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
-from rfq import (availability, compliance, decide, intake, interpret, llm, match, price,
-                 questions, render, safety, standardize, verify)
+from rfq import (availability, compliance, decide, intake, interpret, jury, llm, match,
+                 price, questions, render, safety, standardize, verify)
 from rfq.context import Context
 from rfq.llm import CallRecord
 from rfq.models import Line, Run, Terms, buyer_view, issue
@@ -30,6 +30,7 @@ log = logging.getLogger(__name__)
 RULE_STAGES = (
     ("standardize", standardize.standardize, lambda l: l.spec),
     ("resolve", match.resolve, lambda l: [o.candidate for o in l.offers]),
+    ("jury", jury.cross_check, lambda l: l.jury),
     ("availability", availability.check, lambda l: [o.availability for o in l.offers]),
     ("price", price.price, lambda l: [o.price for o in l.offers]),
     ("compliance", compliance.check, lambda l: [o.compliance for o in l.offers]),
