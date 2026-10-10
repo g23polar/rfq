@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "```json\n{\n  \"material\": {\n    \"value\": \"AL\",\n    \"unit\": null,\n    \"source_text\": \"AL\"\n  },\n  \"grade\": {\n    \"value\": \"5052-H32\",\n    \"unit\": null,\n    \"source_text\": \"5052-H32\"\n  },\n  \"form\": {\n    \"value\": \"sheet\",\n    \"unit\": null,\n    \"source_text\": \"sheet\"\n  },\n  \"thickness\": null,\n  \"gauge\": null,\n  \"width\": null,\n  \"length\": null,\n  \"diameter\": null,\n  \"wall\": null,\n  \"unlabeled_dimensions\": [\n    {\n      \"value\": \".050\",\n      \"unit\": null,\n      \"source_text\": \".050 x 48 x 96\"\n    },\n    {\n      \"value\": \"48\",\n      \"unit\": null,\n      \"source_text\": \".050 x 48 x 96\"\n    },\n    {\n      \"value\": \"96\",\n      \"unit\": null,\n      \"source_text\": \".050 x 48 x 96\"\n    }\n  ],\n  \"quantity\": null,\n  \"standard\": null,\n  \"finish\": null,\n  \"temper\": null,\n  \"tolerance\": null,\n  \"customer_part_no\": null,\n  \"drawing_ref\": null,\n  \"requirements\": []\n}\n```",
+ "tokens_in": 2288,
+ "tokens_out": 1588
+}

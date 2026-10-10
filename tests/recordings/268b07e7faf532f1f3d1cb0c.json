@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"material\": {\"value\": \"CRS\", \"source_text\": \"1018 CRS rd bar 1/2 dia x 12 ft\"}, \"grade\": {\"value\": \"1018\", \"source_text\": \"1018 CRS rd bar 1/2 dia x 12 ft\"}, \"form\": {\"value\": \"rd bar\", \"source_text\": \"1018 CRS rd bar 1/2 dia x 12 ft\"}, \"thickness\": null, \"gauge\": null, \"width\": null, \"length\": {\"value\": \"12\", \"unit\": \"ft\", \"source_text\": \"x 12 ft\"}, \"diameter\": {\"value\": \"1/2\", \"source_text\": \"1/2 dia\"}, \"wall\": null, \"unlabeled_dimensions\": [], \"quantity\": null, \"standard\": null, \"finish\": null, \"temper\": null, \"tolerance\": null, \"customer_part_no\": null, \"drawing_ref\": null, \"requirements\": []}",
+ "tokens_in": 2269,
+ "tokens_out": 378
+}

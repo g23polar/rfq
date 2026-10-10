@@ -26,7 +26,7 @@ os.environ["RFQ_LLM_CACHE"] = str(RECORDINGS)
 
 from rfq import pipeline  # noqa: E402  (after the cache directory is set)
 
-for name in ("rfq_email.txt", "rfq.pdf", "rfq_clean.pdf"):
+for name in ("rfq_email.txt", "rfq.pdf", "rfq_clean.pdf", "rfq.xlsx"):
     done = pipeline.process((ROOT / "fixtures" / name).read_bytes(), name, today=date(2026, 10, 10))
     print(f"{name}: {len(done.run.lines)} lines, {len(done.trace.calls)} calls, {done.run.counts}")
 print(f"{len(list(RECORDINGS.glob('*.json')))} responses saved to {RECORDINGS}")

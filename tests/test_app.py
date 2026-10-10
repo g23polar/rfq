@@ -18,7 +18,8 @@ def client(monkeypatch):
 
 
 def test_sample_to_approved_quote(client):
-    assert client.get("/api/samples").json() == {"email": "rfq_email.txt", "pdf": "rfq.pdf"}
+    assert client.get("/api/samples").json() == {"email": "rfq_email.txt", "pdf": "rfq.pdf",
+                                                 "sheet": "rfq.xlsx"}
     run = client.post("/api/samples/email").json()
     rfq_id = run["rfq_id"]
     assert run["quote_status"] == "draft" and len(run["lines"]) == 7

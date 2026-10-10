@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-haiku-4-5",
+ "output": "```json\n{\"text\": \"For Line 10, could you please let us know the quantity you need?\"}\n```",
+ "tokens_in": 176,
+ "tokens_out": 29
+}

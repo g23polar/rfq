@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-haiku-4-5",
+ "output": "```json\n{\n  \"suspects\": []\n}\n```",
+ "tokens_in": 584,
+ "tokens_out": 17
+}

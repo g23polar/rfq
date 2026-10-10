@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\n  \"material\": {\"value\": \"SS\", \"unit\": null, \"source_text\": \"304 SS\"},\n  \"grade\": {\"value\": \"304\", \"unit\": null, \"source_text\": \"304 SS\"},\n  \"form\": {\"value\": \"round tube\", \"unit\": null, \"source_text\": \"round tube\"},\n  \"thickness\": null,\n  \"gauge\": null,\n  \"width\": null,\n  \"length\": {\"value\": \"20\", \"unit\": \"ft\", \"source_text\": \"20 ft\"},\n  \"diameter\": {\"value\": \"1\", \"unit\": null, \"source_text\": \"1 OD\"},\n  \"wall\": {\"value\": \".065\", \"unit\": null, \"source_text\": \".065 wall\"},\n  \"unlabeled_dimensions\": [],\n  \"quantity\": {\"value\": \"25\", \"unit\": \"ea\", \"source_text\": \"Qty: 25 | UoM: ea\"},\n  \"standard\": null,\n  \"finish\": null,\n  \"temper\": null,\n  \"tolerance\": null,\n  \"customer_part_no\": null,\n  \"drawing_ref\": null,\n  \"requirements\": []\n}",
+ "tokens_in": 2269,
+ "tokens_out": 631
+}

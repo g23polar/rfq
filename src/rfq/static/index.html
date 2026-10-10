@@ -184,13 +184,14 @@ a.btn{color:var(--ink);text-decoration:none;display:inline-block}
 
     <div>
       <p class="label">New request</p>
-      <label class="drop" id="drop"><b>Drop an RFQ here</b>email text or PDF, or click to choose
-        <input type="file" id="file" accept=".txt,.eml,.pdf,text/plain,application/pdf" hidden></label>
+      <label class="drop" id="drop"><b>Drop an RFQ here</b>email, PDF or spreadsheet, or click to choose
+        <input type="file" id="file" accept=".txt,.eml,.pdf,.xlsx,.csv,text/plain,application/pdf" hidden></label>
       <textarea id="paste" placeholder="or paste the request, or type one line:&#10;304 SS sheet 16ga 4x8 - 10 ea"></textarea>
       <div class="row">
         <button class="btn go" id="send">Draft quote</button>
         <button class="btn" data-sample="email">Sample email</button>
         <button class="btn" data-sample="pdf">Sample PDF</button>
+        <button class="btn" data-sample="sheet">Sample sheet</button>
       </div>
     </div>
 
@@ -512,7 +513,7 @@ $("#send").onclick = () => {
   const f = new FormData(); f.append("text", text); call("/api/rfq", {method: "POST", body: f}, "Reading the pasted request.");
 };
 document.querySelectorAll("[data-sample]").forEach((b) => b.onclick = () =>
-  call(`/api/samples/${b.dataset.sample}`, {method: "POST"}, `Reading the sample ${b.dataset.sample === "pdf" ? "PDF" : "email thread"}.`));
+  call(`/api/samples/${b.dataset.sample}`, {method: "POST"}, `Reading the sample ${({pdf: "PDF", sheet: "spreadsheet"})[b.dataset.sample] || "email thread"}.`));
 $("#file").onchange = (e) => e.target.files[0] && sendFile(e.target.files[0]);
 const drop = $("#drop");
 ["dragenter", "dragover"].forEach((n) => drop.addEventListener(n, (e) => { e.preventDefault(); drop.classList.add("over"); }));

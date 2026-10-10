@@ -156,6 +156,10 @@ def _grade_regex(variant: str) -> re.Pattern:
     return re.compile(r"(?<![A-Z0-9])" + "".join(parts) + r"(?![A-Z0-9])")
 
 
+# A list of quantities after a quantity label: "Qty: 10 / 50 / 100", "price @ 10/50/100".
+QTY_BREAKS = re.compile(r"(?:qty|quantity|price\s*@|pricing\s*@)[^|\n\d]*(\d[\d,]*(?:\s*/\s*\d[\d,]*)+)", re.I)
+
+
 def _pair_text(w: "Dim", l: "Dim") -> str:
     """How the buyer wrote a width and length: once if both came from one piece of text ("4x8")."""
     return w.text if w.text == l.text else f"{w.text} x {l.text}"
@@ -167,6 +171,7 @@ class _Standardizer:
         self.ref = ctx.ref
         self.tables = ctx.ref.tables
         self.r: Reading = line.reading  # type: ignore[assignment]
+        self.text = line.segment.text
         self.issues: list[Issue] = []
         self.flagged: set[str] = set()  # fields that already carry a buyer issue
         self.spec = Spec()
@@ -202,7 +207,14 @@ class _Standardizer:
         q = self.r.quantity
         got = _measure(q)
         if got is None:
-            if required:
+            breaks = QTY_BREAKS.search(self.text)
+            if required and breaks:
+                # Several quantities were asked for and none could be taken as the quantity.
+                tiers = re.findall(r"\d[\d,]*", breaks.group(1))
+                self.add("missing", f"You asked for prices at {breaks.group(1).strip()}. Quantity "
+                         "breaks are not priced automatically yet; which quantity should we "
+                         "quote?", "quantity", options=tiers, flag=True)
+            elif required:
                 self.add("missing", "No quantity was given. How many do you need?", "quantity",
                          flag=True)
             return
@@ -215,6 +227,12 @@ class _Standardizer:
             return
         self.spec.quantity = value
         self.spec.quantity_unit = QTY_UNITS[key]  # type: ignore[assignment]
+        tiers = re.findall(r"\d[\d,]*(?:\.\d+)?", str(q.value)) if q else []  # type: ignore[union-attr]
+        if len(tiers) > 1 and re.search(r"[/;]|\band\b|\bor\b", str(q.value)):  # type: ignore[union-attr]
+            # Quantity breaks ("10 / 50 / 100") are not priced yet; say so instead of quietly
+            # quoting one of them.
+            self.add("assumption", f"You asked for prices at {_written(q)}. This quote prices "
+                     f"{_fmt(value)} only; ask us for the other quantities.", "quantity")
 
     # ---- material, grade, form -------------------------------------------------
 

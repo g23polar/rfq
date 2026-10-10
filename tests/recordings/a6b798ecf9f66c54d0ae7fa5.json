@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-haiku-4-5",
+ "output": "```json\n{\"text\": \"For Line 10, could you please clarify which quantity you'd like us to quote: 10, 50, or 100?\"}\n```",
+ "tokens_in": 226,
+ "tokens_out": 42
+}

@@ -20,7 +20,7 @@ load_dotenv(".env")
 
 ROOT = Path(__file__).parent
 FIXTURES = ROOT.parent.parent / "fixtures"
-SAMPLES = {"email": "rfq_email.txt", "pdf": "rfq.pdf"}
+SAMPLES = {"email": "rfq_email.txt", "pdf": "rfq.pdf", "sheet": "rfq.xlsx"}
 
 app = FastAPI(title="RFQ-to-Quote Agent")
 RUNS: dict[str, pipeline.Processed] = {}
@@ -49,7 +49,7 @@ def _run(rfq_id: str) -> Run:
 
 @app.post("/api/rfq")
 async def create_rfq(file: UploadFile | None = File(None), text: str | None = Form(None)) -> Run:
-    """Process an uploaded file (email text or PDF) or pasted text into a draft quote."""
+    """Process an uploaded file (email text, PDF, .xlsx or .csv) or pasted text into a draft."""
     if file is not None:
         return _process(await file.read(), file.filename)
     if text and text.strip():

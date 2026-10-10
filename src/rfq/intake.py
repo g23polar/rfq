@@ -8,6 +8,7 @@ Two steps, so the safety screen (task 05) can sit between them:
 `segment` masks withheld passages with spaces before the model sees the text, so every
 location still points into `doc.cleaned`. Nothing here interprets a line.
 """
+import csv
 import io
 import re
 from dataclasses import dataclass, field
@@ -39,9 +40,13 @@ class Document:
     cleaned: str
     stripped: list[Stripped] = field(default_factory=list)
     pages: list[tuple[int, int, int]] = field(default_factory=list)  # (page, start, end) in cleaned
+    rows: list[tuple[int, int, int]] = field(default_factory=list)  # (sheet row, start, end)
 
     def page_at(self, offset: int) -> int | None:
         return next((p for p, s, e in self.pages if s <= offset < e), None)
+
+    def row_at(self, offset: int) -> int | None:
+        return next((r for r, s, e in self.rows if s <= offset < e), None)
 
 
 HEADER = re.compile(r"^(From|To|Cc|Date|Sent|Subject):", re.I)
@@ -124,9 +129,71 @@ def _outlook_header(lines: list[tuple[int, str]], i: int) -> bool:
     return any(re.match(r"^(Sent|Date):", l) for _, l in lines[i + 1:i + 4])
 
 
+LINE_HEADER = re.compile(r"^(line|ln|pos|position|#|no\.?)(\s*(no\.?|#|number))?$", re.I)
+QTY_HEADER = re.compile(r"^(qty|quantity|qnty|q'ty)\b", re.I)
+
+
+def _cell(value) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+    return str(value.isoformat() if hasattr(value, "isoformat") else value).strip()
+
+
+def _sheet_rows(data: bytes | str, suffix: str) -> list[list[str]]:
+    if suffix == ".csv":
+        text = data.decode("utf-8-sig", errors="replace") if isinstance(data, bytes) else data
+        return [[c.strip() for c in row] for row in csv.reader(io.StringIO(text))]
+    from openpyxl import load_workbook
+
+    book = load_workbook(io.BytesIO(data), data_only=True, read_only=True)
+    return [[_cell(c) for c in row] for sheet in book for row in sheet.iter_rows(values_only=True)]
+
+
+def read_spreadsheet(data: bytes | str, filename: str | None, suffix: str) -> Document:
+    """A spreadsheet as text, one line per sheet row, so the rest of the pipeline treats it
+    like any other RFQ. Rows above the table are written as they are; each table row is written
+    with its column names ("Description: ... | Qty: 25 | UoM: ea"), so a number is never
+    mistaken for something it isn't. An empty quantity cell is written "(blank)"."""
+    rows = _sheet_rows(data, suffix)
+    header_at = next((n for n, r in enumerate(rows)
+                      if sum(bool(c) for c in r) >= 3 and n + 1 < len(rows) and any(rows[n + 1])
+                      and not any(c[:1].isdigit() for c in r if c)), None)
+    header = rows[header_at] if header_at is not None else []
+    parts, spans, pos = [], [], 0
+    for n, row in enumerate(rows):
+        if not any(row):
+            continue
+        if header_at is None or n < header_at:
+            line = " ".join(c for c in row if c)
+        elif n == header_at:
+            continue
+        else:
+            cells = []
+            for name, value in zip(header, row):
+                if LINE_HEADER.match(name) and value:
+                    cells.insert(0, f"Line {value}")
+                elif value:
+                    cells.append(f"{name}: {value}" if name else value)
+                elif QTY_HEADER.match(name):
+                    cells.append(f"{name}: (blank)")
+            line = " | ".join(cells)
+        parts.append(line + "\n")
+        spans.append((n + 1, pos, pos + len(line) + 1))
+        pos += len(line) + 1
+    text = "".join(parts)
+    return Document(source=RunSource(filename=filename, kind="spreadsheet"), original=text,
+                    cleaned=text, rows=spans)
+
+
 def read_document(data: bytes | str, filename: str | None = None) -> Document:
-    """Extract the text of an email, a text file or a PDF, and strip email history."""
+    """Extract the text of an email, a text file, a PDF or a spreadsheet, and strip email
+    history."""
     suffix = Path(filename).suffix.lower() if filename else ""
+    if suffix in (".xlsx", ".xlsm", ".csv") or (not suffix and isinstance(data, bytes)
+                                                and data[:4] == b"PK\x03\x04"):
+        return read_spreadsheet(data, filename, suffix or ".xlsx")
     if suffix == ".pdf" or (isinstance(data, bytes) and data[:5] == b"%PDF-"):
         from pypdf import PdfReader
 
@@ -278,7 +345,8 @@ def segment(doc: Document, withheld: list[str] | None = None,
             item_no += 1
         no = (l.buyer_line_no or "-") if numbered else (str(item_no) if l.kind == "item" else "-")
         segment_ = Segment(buyer_line_no=no, text=m.group(), kind=l.kind,
-                           location=Location(page=doc.page_at(m.start()), start=m.start(),
+                           location=Location(page=doc.page_at(m.start()), row=doc.row_at(m.start()),
+                                             start=m.start(),
                                              end=m.end()))
         line = Line(buyer_line_no=no, segment=segment_)
 

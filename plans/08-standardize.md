@@ -66,6 +66,8 @@ The fingerprint is the canonical fields joined in a fixed order.
 
 ## As built
 
+- Quantity breaks (added with spreadsheet intake): when several quantities follow a quantity label ("Qty: 10 / 50 / 100") and none was read as the quantity, the buyer is asked which to quote, with the tiers as options. If the list was read as the quantity, the first is priced and an assumption says the others were not. Tier-by-tier pricing (PR-7) is still not built.
+
 - Changed after the first live end-to-end run: unlabeled dimensions written smallest first, each with its unit ("1/4 in x 48 in x 96 in"), are read as thickness x width x length without an assumption; any other order still logs one (U6).
 - Added during wiring (tests/test_chain.py): when no form is named but the line has a thickness, a width and a length, the form is read as sheet or plate (by thickness) with an `assumption`. The track's second example string names no form, so without this it could not share a fingerprint with the first.
 

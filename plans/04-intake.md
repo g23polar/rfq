@@ -50,7 +50,12 @@ Where the buyer gave no line numbers, lines are numbered 1, 2, 3 in order.
 - Buyer numbers are kept as written. Requirement and note lines get `-`. If no item has a number, items are numbered 1, 2, 3.
 - `llm.call_json` gained `max_tokens`. Segmentation uses 8000, because the 2000 default truncated the 8-line PDF. Non-default limits are part of the cache key.
 - Live check (`uv run python scripts/run_intake.py`): email 8 s, PDF 19 s, one call each, nothing dropped. The PDF's hidden instruction did not appear in any segment.
-- Not built: spreadsheet intake, triage and wrapped or multi-item lines (all stretch).
+- **Spreadsheet intake (added later):** `read_document` accepts `.xlsx`, `.xlsm` and `.csv`. `read_spreadsheet` writes the sheet as text, one line per row: rows above the table as they are, and each table row with its own column names (`Line 10 | Description: ... | Qty: 25 | UoM: ea`). It then goes through the same screen, segmentation and interpretation as an email, so there is one code path. This differs from the plan, which had rows becoming segments with no model call; reusing the path was far less code and keeps source checking identical.
+  - The line-number column is recognized by its heading (Line, Pos, #, No.) and becomes the buyer's line number.
+  - An empty quantity cell is written `(blank)`. Without that, the model could take the line number for the quantity.
+  - `Document.rows` maps each text line to its sheet row; segments carry it in `Location.row`.
+  - Sample: `fixtures/rfq.xlsx`, also at `POST /api/samples/sheet` and as a button on the review screen.
+- Not built: triage and wrapped or multi-item lines (stretch).
 
 ## Out of scope
 
