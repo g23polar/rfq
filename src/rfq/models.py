@@ -104,6 +104,7 @@ class Reading(BaseModel):
     width: Sourced | None = None
     length: Sourced | None = None
     diameter: Sourced | None = None
+    wall: Sourced | None = None  # tube and pipe wall thickness
     unlabeled_dimensions: list[Sourced] = Field(default_factory=list)  # "48 x .25 x 96"
     quantity: Sourced | None = None
     standard: Sourced | None = None
@@ -138,6 +139,7 @@ class Spec(BaseModel):
     width_in: float | None = None
     length_in: float | None = None
     diameter_in: float | None = None
+    wall_in: float | None = None  # tube and pipe
     quantity: float | None = None
     quantity_unit: PriceUnit | None = None
     standard: str | None = None
