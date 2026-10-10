@@ -8,6 +8,7 @@ request, so the same RFQ always gets the same reading and tests run with no netw
 import hashlib
 import json
 import os
+import threading
 import time
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -127,8 +128,12 @@ def _complete(model: str, messages: list[dict[str, str]], attempt: int,
     except Exception as e:  # the SDK has already retried transient failures
         raise ModelCallError(f"Nicrron request failed for {model}: {e}") from e
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"model": model, "output": output, "tokens_in": tokens_in,
-                                "tokens_out": tokens_out}, indent=1))
+    # Written to a private file and renamed, so another thread making the same request never
+    # reads a half-written response.
+    partial = path.with_name(f"{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
+    partial.write_text(json.dumps({"model": model, "output": output, "tokens_in": tokens_in,
+                                   "tokens_out": tokens_out}, indent=1))
+    os.replace(partial, path)
     return CallRecord(model=model, messages=messages, output=output, tokens_in=tokens_in,
                       tokens_out=tokens_out, latency_ms=int((time.monotonic() - started) * 1000),
                       source="live", attempt=attempt)
