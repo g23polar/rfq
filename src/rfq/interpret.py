@@ -8,6 +8,7 @@ expands shorthand or fills a default; that is task 08.
     line = interpret(line, terms)
     lines = interpret_all(lines, terms)   # concurrent; llm calls are synchronous
 """
+import contextvars
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
@@ -160,6 +161,8 @@ def interpret(line: Line, terms: Terms) -> Line:
 
 
 def interpret_all(lines: list[Line], terms: Terms, workers: int = 8) -> list[Line]:
-    """Interpret many lines concurrently, keeping their order."""
+    """Interpret many lines concurrently, keeping their order. Each line runs in a copy of
+    the caller's context, so `llm.capture()` around this call sees every model call."""
+    contexts = [contextvars.copy_context() for _ in lines]
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        return list(pool.map(lambda l: interpret(l, terms), lines))
+        return list(pool.map(lambda c, l: c.run(interpret, l, terms), contexts, lines))

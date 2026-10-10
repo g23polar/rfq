@@ -10,9 +10,10 @@ import json
 import os
 import time
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Generic, Literal, TypeVar
+from typing import Generic, Iterator, Literal, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -67,6 +68,21 @@ def watching(sink: list[CallRecord]):
         yield sink
     finally:
         _watchers.remove(sink.append)
+
+
+_capture: ContextVar[list[CallRecord] | None] = ContextVar("rfq_llm_capture", default=None)
+
+
+@contextmanager
+def capture() -> Iterator[list[CallRecord]]:
+    """Collect every model call made inside the block (this context only), for recording.
+    Threads started inside need `contextvars.copy_context()` to be included."""
+    calls: list[CallRecord] = []
+    token = _capture.set(calls)
+    try:
+        yield calls
+    finally:
+        _capture.reset(token)
 
 
 def _cache_dir() -> Path:
@@ -146,6 +162,8 @@ def call_json(system: str, user: str, shape: type[T], model: str = MODEL_READ,
         calls.append(record)
         for watcher in list(_watchers):
             watcher(record)
+        if (sink := _capture.get()) is not None:
+            sink.append(record)
         try:
             return ModelResult(shape.model_validate_json(_extract_json(record.output)), calls)
         except (ValidationError, ValueError) as e:
