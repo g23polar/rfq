@@ -1,7 +1,7 @@
 """The rule stages wired together (tasks 08 to 12), on golden-set lines with hand-built readings.
 
 The interpretation stage (task 06) is not part of this: each Reading below is what it should
-produce for the line. Availability (task 19) is not wired in yet.
+produce for the line.
 """
 import json
 from datetime import date
@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from rfq import compliance, decide, match, price, standardize, verify
+from rfq import availability, compliance, decide, match, price, standardize, verify
 from rfq.context import Context
 from rfq.models import Line, Reading, Segment, Sourced, Terms, buyer_view, Run, RunSource
 from rfq.reference import load_reference
@@ -74,8 +74,8 @@ def run_line(golden_id: str) -> Line:
     line = Line(buyer_line_no=no,
                 segment=Segment(buyer_line_no=no, text=g["text"]),
                 reading=READINGS[golden_id])
-    for stage in (standardize.standardize, match.resolve, price.price, compliance.check,
-                  decide.decide, verify.verify):
+    for stage in (standardize.standardize, match.resolve, availability.check, price.price,
+                  compliance.check, decide.decide, verify.verify):
         line = stage(line, ctx)
     return line
 
@@ -91,6 +91,19 @@ def test_golden_line_reaches_expected_status_and_item(golden_id):
     if line.verification:
         assert line.verification.passed or line.status == "needs_specialist_review", \
             line.verification.failures
+
+
+def test_short_stock_is_quoted_with_the_shortfall_stated():
+    """Golden pdf-4 asks for 8 of an item with 3 in stock: still quoted, partial (Q4)."""
+    READINGS["pdf-4"] = Reading(grade=s("304"), material=s("SS"), form=s("plate"),
+                                thickness=s("1/4", "in"), width=s("48", "in"),
+                                length=s("96", "in"), standard=s("ASTM A240"),
+                                quantity=s("8", "ea"))
+    line = run_line("pdf-4")
+    del READINGS["pdf-4"]
+    assert line.status == GOLDEN["pdf-4"]["expected"]["status"]
+    a = line.offers[0].availability
+    assert (a.status, a.available_qty, a.shortfall_qty) == ("partial", 3, 5)
 
 
 def test_track_strings_share_a_fingerprint():

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | Done |
 | **Depends on** | 01, 02 |
 | **Unblocks** | 14 |
 
@@ -39,6 +39,15 @@ An `Availability` on the offer (task 01).
 - Lead time in days for the shortfall or for non-stock items, from the catalog (AV-2).
 - A flag when the RFQ's requested delivery date is earlier than stock plus lead time allows (AV-3, C5).
 - An in-stock substitute offered as an alternate when the matched item is out of stock; built in task 09 using this task's result (X5).
+
+## As built
+
+- `availability.check(line, ctx)` in `src/rfq/availability.py` sets `offer.availability` on every offer that has a catalog item and a quantity. It adds no issues and never touches the status.
+- `available_qty` and `shortfall_qty` are in the buyer's own unit. `available_qty` is what can ship now against this request (never more than was asked for), so "3 available, 5 short" reads directly off the two fields.
+- Pieces are converted to pounds and hundredweight with `price.piece_weight_lb`, and to feet with the stock length.
+- Lead time (AV-2) is included: it is set from the catalog whenever there is a shortfall, and left blank when the line is fully in stock.
+- Not built: the flag for a requested delivery date that can't be met (AV-3), and offering an in-stock substitute (X5).
+- If stock can't be converted to the buyer's unit (a dimension missing), availability is left blank; nothing is promised.
 
 ## Out of scope
 

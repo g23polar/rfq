@@ -74,13 +74,13 @@ As of 13:35 EDT, Oct 10: 12 of 19 done (01 to 12); 04 to 06 and 08 to 12 are mus
 | 10 | [Price](10-price.md) | Claude (subagent) | Done (M) | 01, 02 | PR-1 to PR-4, PR-8 | PR-5 to PR-7, PR-10 |
 | 11 | [Compliance](11-compliance.md) | Claude (subagent) | Done (M) | 01, 02 | CP-1 to CP-3, CP-5, CP-6 | CP-4 |
 | 12 | [Decide and verify](12-decide-and-verify.md) | Claude (subagent) | Done (M) | 01, 07 | DC-1 to DC-4, SF-4, SF-5, VR-1 | none |
-| 13 | [PRISM recording](13-prism-recording.md) | Unassigned | Not started | 01 | VR-4, EV-3 | UX-8 |
+| 13 | [PRISM recording](13-prism-recording.md) | Mihir | In progress | 01 | VR-4, EV-3 | UX-8 |
 | 14 | [Pipeline, review and API](14-pipeline-and-api.md) | Unassigned | Blocked | 04 to 13, 19 | UX-3, UX-5, UX-6 | UX-4, UX-7, DC-5, NF-4 |
-| 15 | [Review screen](15-web-ui.md) | Unassigned | Not started | 01 | UX-1 to UX-3, NF-8 | UX-4, UX-8 |
+| 15 | [Review screen](15-web-ui.md) | Mihir | In progress | 01 | UX-1 to UX-3, NF-8 | UX-4, UX-8 |
 | 16 | [Evaluation and README](16-evaluation-and-readme.md) | Unassigned | Blocked | 03, 14 | QA-2, DC-1 | none |
 | 17 | [PRISM dashboard setup](17-prism-dashboard-setup.md) | User | In progress | 02, 13 | SF-1, MT-6, VR-2 | VR-3 |
 | 18 | [Submission](18-submission.md) | User | Blocked | all | EV-9 | none |
-| 19 | [Availability](19-availability.md) | Unassigned | Not started | 01, 02 | AV-1 | AV-2, AV-3 |
+| 19 | [Availability](19-availability.md) | Claude | Done | 01, 02 | AV-1 | AV-2, AV-3 |
 
 ## Order of work
 
