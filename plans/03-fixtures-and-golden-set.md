@@ -8,42 +8,45 @@
 
 ## Goal
 
-Create the three sample RFQs and the labeled test set that the demo and the accuracy number rest on.
+Create the sample RFQs and the labeled test set that the demo and the metrics rest on.
 
 ## Spec requirements
 
-QA-1, section 10, and the fixture named in the acceptance column of IN-1 to IN-3, SF-1, RD-4, RD-8, MT-5, CP-2, CP-4.
+QA-1, section 16, and the M cases of the edge-case catalogue (section 12).
 
 ## Outputs
 
-| File | Contents |
-|---|---|
-| `scripts/make_fixtures.py` | Generates the files below so they can be rebuilt |
-| `fixtures/rfq_email.txt` | A messy email: greeting, header terms, 6 to 8 lines, sign-off |
-| `fixtures/rfq.pdf` | A text PDF with a line table and footnotes |
-| `fixtures/rfq.xlsx` | A spreadsheet with a header block above the line rows |
-| `fixtures/golden.jsonl` | About 20 lines: raw text, expected spec fields, expected status, expected SKU where quoted |
-
-## Seeded cases and where they go
-
-| Case | Fixture | Expected status |
+| File | Contents | Tier |
 |---|---|---|
-| "304 SS sheet 16ga 4x8" | email | Quoted with assumptions |
-| "Stainless 304, 0.060 in, 48 x 96" (same fingerprint as above) | spreadsheet | Quoted with assumptions |
-| A duplicate item written two ways in one RFQ | email | Both quoted, linked |
-| A line with no grade | email | Needs clarification |
-| A bar length with no unit | spreadsheet | Needs clarification |
-| Stated gauge disagrees with stated thickness | PDF | Needs clarification |
-| "Domestic material only" in the header against a non-domestic item | PDF | No bid |
-| An item not in the catalog | spreadsheet | No bid |
-| A hidden instruction trying to change prices | PDF | Passage withheld; no effect |
-| A buyer discount request in the header | email | Shown as a term; no effect |
-| A fully specified line with units and standard | each | Quoted |
+| `scripts/make_fixtures.py` | Generates the files below so they can be rebuilt | M |
+| `fixtures/rfq_email.txt` | An email thread: the newest request on top, forwarded history with an old quote below, a signature with a phone number | M |
+| `fixtures/rfq.pdf` | A text PDF with a line table, footnotes and the hidden instruction | M |
+| `fixtures/rfq_clean.pdf` | The same PDF without the hidden instruction, for the "no effect" comparison | M |
+| `fixtures/rfq.xlsx` | A spreadsheet with a header block and buyer line numbers | S |
+| `fixtures/golden.jsonl` | About 25 lines: raw text, expected spec fields, expected status, expected SKU where quoted, and whether the answer was determinable (for the over-ask count) | M |
 
-## In scope
+## Seeded cases
 
-- Fixtures a judge would believe: inconsistent formatting, abbreviations, fractions, a footnote carrying a requirement.
-- A second copy of the PDF without the injected passage, for the "no effect" comparison.
+| Fixture | Case (catalogue id) | Expected result |
+|---|---|---|
+| Email | Forwarded history and signature (D1, D2) | Only the newest request's lines; phone number not read as an item |
+| Email | "304 SS sheet 16ga 4x8" and "Stainless 304, 0.060 in, 48 x 96" (L1, U2) | Same fingerprint; quoted with assumptions |
+| Email | Grade missing (M1) | Quoted with alternates, one question |
+| Email | Customer part number only (L5) | Resolved by cross-reference |
+| Email | "All material DFARS compliant" between lines (D7, P2) | RFQ-wide requirement, not an item |
+| Email | A below-floor item (PR-2) | Needs specialist review |
+| PDF | Gauge disagrees with thickness (U7) | Needs buyer input |
+| PDF | Wording unclear between 304 and 304L (M2) | Quoted with alternates |
+| PDF | Quantity in pounds (Q2) | Priced per lb |
+| PDF | Quantity above stock (Q4) | Quoted, partial availability |
+| PDF | "Per dwg 4471 rev B" (D5) | Needs buyer input: asks for the drawing |
+| PDF | Not in catalog (X4) | No bid |
+| PDF | Hidden instruction (S1), placed outside the line items | Withheld; every price and status identical to the clean copy |
+| Spreadsheet (S) | Buyer line numbers 10, 20, 30 (D10); missing quantity (Q1); quantity breaks (L8) | Numbering preserved; needs buyer input; tiers priced |
+
+The track's two example strings carry no quantity, so the fixture adds one to each ("10 ea"); without it they would stop at "needs buyer input".
+
+The golden set also needs lines for U1 (fraction forms), U4 (gauge by material), U6 (dimension order), M5 (default standard), P1 (MTR), P3 (line overrides header), P5 (unverifiable requirement), X1 (exact match) and X3 (tie).
 
 ## Out of scope
 
@@ -51,6 +54,6 @@ QA-1, section 10, and the fixture named in the acceptance column of IN-1 to IN-3
 
 ## Acceptance criteria
 
-- Every seeded case appears in exactly one fixture and in `golden.jsonl`.
-- The golden set has at least one line for each of the four statuses.
+- Every M case in the catalogue appears in a fixture or the golden set, with its catalogue id recorded.
+- The golden set has at least one line for each of the seven statuses.
 - The PDF's text layer extracts with the line items intact.

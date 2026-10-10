@@ -12,38 +12,40 @@ Fix the shared data shapes and the project layout so every other task can be bui
 
 ## Spec requirements
 
-None directly; it carries the shapes that RD-2 (source text on every value), section 7 (statuses) and UX-2 (line detail) need.
+None directly; it carries the shapes that the statuses (spec section 9), source evidence (RD-2, NF-1), buyer and internal separation (DC-2, SF-4) and the review screen (UX-2) need.
 
 ## Outputs
 
 1. **Project skeleton**: `pyproject.toml` (uv), `src/rfq/`, `tests/`, `scripts/`, `fixtures/`, `src/rfq/data/`, `src/rfq/static/`. `.env` already exists and is git-ignored.
 2. **`src/rfq/models.py`** with the shapes below (pydantic).
-3. **`fixtures/sample_run.json`**: one hand-written `Run` with four lines, one per status, plus one withheld passage. Tasks 12, 14 and 15 build against it.
-4. **Stage signature**, written in the module docstring: every stage is `stage(line, context) -> line`, where `context` holds the header terms, catalog, benchmarks and reference tables. A stage only adds to the line; it never removes what an earlier stage wrote.
+3. **`fixtures/sample_run.json`**: one hand-written `Run` with one line per status (seven), a line with two alternates, and one withheld passage. Tasks 12, 14 and 15 build against it.
+4. **Stage signature**, written in the module docstring: every stage is `stage(line, context) -> line`, where `context` holds the RFQ terms, customer, catalog, stock, cross-references, benchmarks and rules. A stage only adds to the line.
+5. **Buyer view helper**: one function that turns a `Run` into its buyer-facing form, dropping every internal field. Tasks 12 and 14 use it; nothing else builds buyer output.
 
 ## Data shapes
 
 | Shape | Fields |
 |---|---|
-| `Sourced` | `value`, `source_text` (exact text from the RFQ), `where` (`"line"` or `"header"`) |
-| `RawLine` | `line_no`, `text`, `location` (page or row, plus character range in the original) |
-| `Header` | `due_date`, `delivery`, `requirements[]` (each a `Sourced`), `commercial_requests[]` (each a `Sourced`) |
+| `Sourced` | `value`, `source_text` (exact RFQ text), `source` (`rfq_line`, `rfq_terms`, `catalog`, `cross_reference`, `benchmark`, `rule`, `specialist`) |
+| `Segment` | `buyer_line_no`, `text`, `location` (page or row, character range), `kind` (`item`, `requirement`, `note`, `service`) |
+| `Terms` | `customer`, `due_date`, `delivery`, `requirements[]`, `commercial_requests[]`, `attachment_refs[]` (each a `Sourced`) |
 | `Withheld` | `text`, `location`, `reason`, `detector` (`pattern` or `model`) |
-| `Reading` | One optional `Sourced` per field: `material`, `grade`, `form`, `thickness`, `width`, `length`, `diameter`, `quantity`, `quantity_unit`, `standard`; `requirements[]`; `discarded[]` (values dropped by source verification) |
-| `Issue` | `kind`, `field`, `message`. Kinds: `missing`, `conflict`, `unlisted_inference`, `assumption`, `weak_match`, `tie`, `substitution`, `unconfirmed`, `no_match`, `unmet_requirement` |
-| `Spec` | `material`, `grade`, `form`, `thickness_in`, `width_in`, `length_in`, `diameter_in`, `quantity`, `quantity_unit`, `standard`, `fingerprint` |
-| `Candidate` | `sku`, `description`, `strength` (0 to 1), `differences[]` |
-| `Match` | `best` (optional `Candidate`), `alternatives[]` (at most two) |
-| `Price` | `weight_lb`, `price_per_lb`, `unit_price`, `extended`, `benchmark` (`low`, `mid`, `high`, `source`, `as_of`), `position`, `explanation`, and specialist-only `cost_per_lb`, `margin_pct` |
-| `RequirementResult` | `requirement`, `scope` (`header` or `line`), `source_text`, `result` (`met`, `not_met`, `unknown`), `evidence` |
-| `Line` | `line_no`, `raw` (`RawLine`), `reading`, `spec`, `issues[]`, `match`, `price`, `compliance[]`, `status`, `question` (`text`, `options[]`), `review_flag`, `review_reasons[]`, `duplicate_of[]`, `verification` (`passed`, `failures[]`) |
-| `Run` | `rfq_id`, `created`, `source` (`filename`, `kind`), `header`, `withheld[]`, `lines[]`, `counts` (by status), `total`, `email`, `prism_trace_id` |
+| `Reading` | One optional `Sourced` per field: `material`, `grade`, `form`, `thickness`, `width`, `length`, `diameter`, `quantity`, `quantity_unit`, `standard`, `finish`, `temper`, `tolerance`, `customer_part_no`, `drawing_ref`; `requirements[]`; `discarded[]` |
+| `Issue` | `kind`, `audience` (`buyer` or `internal`), `field`, `message` |
+| `Spec` | `material`, `grade`, `form`, `thickness_in`, `width_in`, `length_in`, `diameter_in`, `quantity`, `quantity_unit`, `standard`, `finish`, `temper`, `fingerprint` |
+| `Candidate` | `sku`, `description`, `strength` (0 to 1), `differences[]`, `via` (`spec` or `cross_reference`), `paths_agree` (optional) |
+| `Availability` | `status` (`in_stock`, `partial`, `not_stocked`), `available_qty`, `shortfall_qty`, `lead_time_days` |
+| `Price` | `unit` (`ea`, `lb`, `cwt`, `ft`), `unit_price`, `extended`, `components[]` (`name`, `amount`), `weight_lb`, `benchmark` (`low`, `mid`, `high`, `source`, `as_of`), `position`, `rationale`, `numbers` (the figures the rationale cites), `valid_until`; internal: `cost_per_lb`, `margin_pct`, `floor_margin_pct` |
+| `RequirementResult` | `requirement`, `scope` (`rfq` or `line`), `source_text`, `result` (`met`, `not_met`, `unknown`), `evidence` |
+| `Offer` | `label`, `spec`, `candidate`, `availability`, `price`, `compliance[]`. A plainly quoted line has one offer; a line with alternates has two or more |
+| `Line` | `buyer_line_no`, `segment`, `reading`, `spec`, `issues[]`, `offers[]`, `status`, `question` (`text`, `options[]`), `review_note`, `duplicate_of[]`, `verification` (`passed`, `failures[]`), `edits[]` |
+| `Run` | `rfq_id`, `revision`, `created`, `source` (`filename`, `kind`), `terms`, `withheld[]`, `lines[]`, `counts` (by status), `total`, `quote_status`, `completeness` (`complete` or `partial`), `approved_by`, `email`, `prism_trace_id` |
 
-`status` is one of `quoted`, `quoted_with_assumptions`, `needs_clarification`, `no_bid`.
+`Line.status`: `quoted`, `quoted_with_assumptions`, `quoted_with_alternates`, `needs_buyer_input`, `needs_specialist_review`, `no_bid`, `not_an_item`.
 
-## In scope
+`Run.quote_status`: `draft`, `in_review`, `approved`, `sent`, `revised`.
 
-- The shapes, the skeleton, the sample run, a test that the sample run loads into the models.
+Issue kinds and their audience are listed in [task 12](12-decide-and-verify.md), which owns the rules that read them.
 
 ## Out of scope
 
@@ -52,5 +54,5 @@ None directly; it carries the shapes that RD-2 (source text on every value), sec
 ## Acceptance criteria
 
 - `uv sync` and `uv run pytest -q` succeed on a clean checkout.
-- `fixtures/sample_run.json` validates against `Run` and contains all four statuses.
-- A buyer-facing dump of a `Line` (a named helper) omits `cost_per_lb` and `margin_pct`.
+- `fixtures/sample_run.json` validates against `Run` and contains all seven statuses.
+- The buyer view of the sample run contains none of: cost, margin, floor, internal issues, review notes, withheld text.

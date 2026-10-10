@@ -1,4 +1,4 @@
-# 15: Web UI
+# 15: Review screen
 
 | | |
 |---|---|
@@ -8,36 +8,39 @@
 
 ## Goal
 
-A single page a quoting specialist can use without a walkthrough: upload an RFQ, see every line's status, and click any value back to where it came from.
+One screen a quoting specialist can use without instructions: drop in an RFQ, see which lines need their judgment, check any value against its source, and approve the quote.
 
 ## Spec requirements
 
-UX-1, UX-2, UX-7 (Must), UX-3, UX-6 (Should). Displays PR-3, PR-6, SF-2.
+M: UX-1, UX-2, UX-3, NF-8. S: UX-4, UX-8. Displays PR-3, AV-1, SF-2.
 
 ## Outputs
 
 `src/rfq/static/index.html` (one file, plain JavaScript, no build step).
 
-## What is on the page
+## What is on the screen (M)
 
 | Area | Contents |
 |---|---|
 | Top | Upload or paste box; a "load sample" button for each fixture |
-| Summary | Counts by status, quote total, "synthetic demo data" label, link to the PRISM run |
-| Quote table | One row per line: status badge, original text, matched item, quantity, unit and extended price, review flag |
-| Line detail (expand a row) | Original text with each field's source highlighted; standardized spec; match with strength and alternatives; price math against the benchmark range, with cost and margin; compliance results with evidence; issues and assumptions; the buyer question with an answer box |
+| Summary | Counts by status, quote total, quote status (draft / in review / approved), "synthetic demo data" label |
+| Line table | One row per line with the buyer's line number: status badge, original text, matched item, availability, quantity and unit, unit and extended price. Lines needing the specialist are grouped first |
+| Line detail (expand a row) | Source text with each field's evidence highlighted; interpreted spec; assumptions; matched item, strength and how it was found; alternates side by side with their prices; availability; price breakdown and benchmark position, with cost and margin; compliance results with evidence; issues split into buyer-facing and internal |
 | Withheld | Passages removed by the safety screen, with location and reason |
-| Deliverables | Buyer email text with a copy button; link to the buyer quote page |
+| Deliverables | Buyer email text with a copy button; link to the buyer-facing quote |
+| Approve | One button; offers "approve as partial" when lines await buyer input; disabled with the reason when the leak check failed |
+
+Internal-only values (cost, margin, review notes) are visually marked so it is obvious they do not go to the buyer.
 
 ## Build in two steps
 
 1. Render `fixtures/sample_run.json` as a static page. No backend needed; can start right after task 01.
-2. Switch to the live endpoints from task 14: upload, answer a question, reload.
+2. Switch to the live endpoints from task 14: upload, approve, reload.
 
-## In scope
+## Stretch (S)
 
-- Hovering or clicking a spec field highlights its source text in the original line.
-- A visible state while a run is in progress.
+- Edit a line's price, match or status with a required reason (UX-4).
+- Link to the PRISM run (UX-8).
 
 ## Out of scope
 
@@ -45,7 +48,8 @@ UX-1, UX-2, UX-7 (Must), UX-3, UX-6 (Should). Displays PR-3, PR-6, SF-2.
 
 ## Acceptance criteria
 
-- All four statuses are distinguishable at a glance in the table.
+- All seven statuses are distinguishable at a glance.
 - Every displayed spec field shows its source text or the named assumption.
-- The withheld passage from the PDF fixture is visible.
-- Someone who has not seen the page can upload a fixture and find the price reasoning for a line unaided.
+- A line with alternates shows each option's price and the one question.
+- Approving changes the quote status and removes the "DRAFT" mark from the buyer quote.
+- Someone who has not seen the screen can load a fixture, find the lines needing review, and approve, unaided.

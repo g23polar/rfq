@@ -1,4 +1,4 @@
-# 11: Compliance check (stage 6)
+# 11: Compliance (stage 8)
 
 | | |
 |---|---|
@@ -12,32 +12,37 @@ For each requirement on a line, say whether the matched item meets it, with evid
 
 ## Spec requirements
 
-CP-1 to CP-5 (all Must).
+M: CP-1, CP-2, CP-3, CP-5, CP-6. S: CP-4. Edge cases P1, P2, P3, P5.
 
 ## Inputs
 
-Header requirements and line requirements (each with its source text), and the matched catalog item.
+RFQ-wide requirements and line requirements (each with its source text), and each offer's matched item.
 
 ## Outputs
 
-`RequirementResult[]` and `Issue`s.
+`RequirementResult[]` on each offer, and `Issue`s.
 
-## Rules
+## Rules (M)
 
 | Requirement, recognized from wording | Check | Result |
 |---|---|---|
-| Mill test report ("MTR", "mill certs", "CMTR", "EN 10204 3.1") | Item's `mtr_available` | met / not met / unknown |
-| Domestic sourcing ("domestic only", "melted and manufactured in USA", "Buy America") | Country of origin is US | met / not met |
-| DFARS | Item's `dfars_compliant` | met / not met |
-| Country of origin disclosure | Always answerable | met, with the country |
-| Specification ("ASTM A240", "per A36") | Item's `standard` | met / not met |
+| Mill test report ("MTR", "mill certs", "CMTR", "3.1 certs", "EN 10204 3.1") | Item's `mtr_available` | met / not met / unknown |
+| DFARS | Item's country of **melt** is a qualifying country | met / not met |
+| "Melted and manufactured in USA", "domestic melt" | Country of melt is US | met / not met |
+| Unqualified "domestic" | Cannot be checked until the buyer says which rule applies | unknown; buyer-facing `open_question` issue asking melt or manufacture. The line is still priced |
+| Specification ("ASTM A240", "per A36", dual certification) | Item's `standard` and `certifications` | met / not met |
 | Anything else | Not checkable | unknown |
 
-- Header requirements apply to every line; each result records whether it came from the header or the line, with its source text.
-- `not_met` adds an `unmet_requirement` issue (leads to No bid).
-- `unknown` adds an `unconfirmed` issue (leads to Needs clarification).
+- RFQ-wide requirements apply to every line; a line-level requirement on the same subject overrides the RFQ-wide one (P3). Each result records which it came from, with its source text.
+- `not_met` adds an `unmet_requirement` issue (leads to no bid, unless another offer is compliant).
+- `unknown` because the item's data is missing, on a critical requirement (MTR, origin, DFARS, specification), adds an internal `unconfirmed` issue (leads to specialist review). `unknown` because the buyer's wording is unclear adds an `open_question` instead. Other unknowns are shown as unknown on the quote.
 
 Recognition is by fixed wording patterns, not a model call.
+
+## Stretch (S)
+
+- Industry-specific requirements: sour service, positive material identification, RoHS/REACH. Detected and marked unknown unless the data confirms (CP-4, P4).
+- Pressure-vessel specifications ("SA-240") matched only to items certified to them (M7).
 
 ## Out of scope
 
@@ -45,7 +50,8 @@ Recognition is by fixed wording patterns, not a model call.
 
 ## Acceptance criteria
 
-- The "domestic material only" header is applied to every line of the PDF fixture and marks the non-domestic item not met.
-- A DFARS line against a non-compliant item is flagged.
-- An unrecognized requirement is shown as unknown, with an issue.
+- The DFARS note in the email fixture is applied to every line and flags the item melted in a non-qualifying country.
+- An unqualified "domestic" produces a question, not a verdict; the line keeps its price and shows the requirement as unknown.
+- A line-level requirement overrides the RFQ-wide one in a test.
+- An item with no MTR data shows "unknown", and the line goes to specialist review.
 - Every result carries the source text of the requirement.

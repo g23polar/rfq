@@ -201,7 +201,7 @@ Each line item carries a running list of **issues** (missing, conflict, assumpti
 | MT-1 | Match each line to catalog items with a match strength, best match and alternates | M | Match accuracy reported |
 | MT-2 | Run two independent matching paths; agreement = confident, disagreement = specialist review | S | Disagreement fixture goes to review |
 | MT-3 | Resolve customer part numbers via a cross-reference table | M (lookup), L (learning) | Known part number resolves with "cross-reference" shown as source |
-| MT-4 | Offer substitutions (dual-certified grades, near sizes, cut from larger stock) only as labeled alternates | M | — |
+| MT-4 | Offer substitutions (a different grade, near sizes, cut from larger stock) only as labeled alternates. Dual-certified stock that meets the requested grade is not a substitution; it is a stated assumption | M | — |
 | MT-5 | No viable match → no bid with reason | M | Not-in-catalog fixture is no-bid |
 | MT-6 | Ground matching claims in reference data loaded into the PRISM Knowledge Base | M | Claims checkable against the Knowledge Base |
 
@@ -241,7 +241,7 @@ Each line item carries a running list of **issues** (missing, conflict, assumpti
 |---|---|---|---|
 | DC-1 | Assign each line exactly one status using documented rules | M | Rules listed in README |
 | DC-2 | Separate buyer-facing issues from internal issues | M | Internal issues never appear in buyer email |
-| DC-3 | Prefer priced alternates over open questions when reasonable options exist | M | 304/304L fixture yields alternates, not a stall |
+| DC-3 | Prefer priced alternates over open questions when reasonable options exist | M | Missing-grade fixture yields alternates, not a stall |
 | DC-4 | Draft one specific question per open item, with options; group all questions in one buyer email, blocking questions first | M | — |
 | DC-5 | Process a buyer reply and re-quote affected lines as a new revision | S | — |
 
@@ -336,7 +336,7 @@ Each case has an expected behavior. Cases marked M are covered by the hackathon 
 | # | Case | Example | Expected behavior | Pri |
 |---|---|---|---|---|
 | M1 | Grade missing | "stainless sheet 16ga 4x8" | Alternates (common grades) + question | M |
-| M2 | Low-carbon variants | 304 vs. 304L | Dual-certified stock offered as alternate; confirm | M |
+| M2 | Low-carbon variants | 304 vs. 304L | A plain 304 or 304L request is filled from dual-certified 304/304L stock as a stated assumption, with no question. Alternates and a question only when the wording is unclear between grades, or the buyer asks for 304H or "straight 304 only" | M |
 | M3 | Aluminum temper missing | "6061 plate 1/2" | Alternates by temper or question | S |
 | M4 | Finish missing or unavailable | #4, 2B, mill, PVC-coated | Standard finish as stated assumption; question if finish-critical | S |
 | M5 | Standard missing | — | Default standard for grade and form, as a stated assumption | M |
@@ -406,7 +406,7 @@ Each case has an expected behavior. Cases marked M are covered by the hackathon 
 | **Routing accuracy** | Lines given the expected status | ≥ 85% |
 | **Over-ask count** | Buyer questions where the test set says the answer was determinable | ≤ 2 |
 | **Field accuracy** | Interpreted fields matching the labeled answer | ≥ 90% |
-| **Touchless rate** | Lines needing no specialist edit | Reported |
+| **Touchless rate** | Lines needing no specialist edit | Not reported until line editing (UX-4) exists |
 | **Rationale consistency** | Price explanations whose numbers match the calculation | 100% |
 | **Leak count** | Internal fields in buyer-facing output | 0 |
 | **Manipulation effect** | Seeded injection changes any output | No |
@@ -464,7 +464,7 @@ All synthetic and labeled.
 
 - **Catalog** (~60 items): stainless, carbon and aluminum in sheet, plate, bar, tube and pipe. Each has cost, stock quantity, lead time, country of melt, MTR availability, certifications (including dual-certified 304/304L and 316/316L items).
 - **Customer cross-reference table:** a few customer part numbers mapped to catalog items.
-- **Benchmarks:** price ranges by material and form, with source label and date; a monthly stainless surcharge table.
+- **Benchmarks:** price ranges by grade and form, with source label and date; a monthly stainless surcharge table.
 - **Reference tables:** gauge by material, densities, abbreviations, default standards, substitution rules, pricing rules (margin floor, minimum charge, cutting charge, validity days).
 - **Three RFQs:**
   - **Email (thread):** forwarded history and signature (D1, D2); track's two example strings (L1); missing grade (M1); "4x8" (U2); customer part number (L5); "DFARS" note in the list (D7, P2)
