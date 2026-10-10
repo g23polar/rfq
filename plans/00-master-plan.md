@@ -41,7 +41,7 @@ Priority follows the spec's key: **M** = must ship today, **S** = stretch today,
 |---|---|
 | Language | Python (`uv`, `pytest`) |
 | Interface | Web review screen plus JSON API |
-| Models | `anthropic/claude-sonnet-5` for segmentation and interpretation, `anthropic/claude-haiku-4-5` for the safety screen and question wording, `temperature: 0` |
+| Models | `anthropic/claude-sonnet-5` for segmentation and interpretation, `anthropic/claude-haiku-4-5` for the safety screen and question wording. sonnet-5 rejects `temperature`, so repeatability comes from a local response cache ([07](07-model-client.md)) |
 | PRISM recording | Direct HTTP (`/api/spans/ingest`, `/api/traces`), not the SDK |
 | Safety | Our own screen does the withholding; PRISM's guardrail flags the same text on the recorded run |
 | Dashboard setup | Done by the user while the code is built |
@@ -66,7 +66,7 @@ Statuses: Not started, In progress, Blocked, Done. Update this table when a task
 | 04 | [Intake and segmentation](04-intake.md) | Unassigned | Not started | 01, 07 | IN-1, IN-3 to IN-6 | IN-1 spreadsheet, IN-2, IN-7 |
 | 05 | [Safety screen](05-safety-screen.md) | Unassigned | Not started | 01, 07 | SF-1 to SF-3 | none |
 | 06 | [Interpret](06-line-reading.md) | Unassigned | Not started | 01, 07 | RD-1 to RD-4 | none |
-| 07 | [Model client](07-model-client.md) | Unassigned | Not started | 01 | EV-2, NF-2 | NF-6 |
+| 07 | [Model client](07-model-client.md) | Claude | Done | 01 | EV-2, NF-2 | NF-6 |
 | 08 | [Standardize and validate](08-standardize.md) | Unassigned | Not started | 01, 02 | RD-5 to RD-7 | RD-8, RD-9 |
 | 09 | [Resolve to catalog](09-match.md) | Unassigned | Not started | 01, 02 | MT-1, MT-3 to MT-5, DC-3 | MT-2 (second path) |
 | 10 | [Price](10-price.md) | Unassigned | Not started | 01, 02 | PR-1 to PR-4, PR-8 | PR-5 to PR-7, PR-10 |
@@ -115,5 +115,3 @@ Never cut: source evidence (06), rules-based pricing (10), the line statuses inc
 | Are evaluators available on our workspace plan? (spec Q3) | 17 | Check the dashboard |
 | How does RudCo price, do they send partial quotes, do buyers accept alternates, typical validity? (spec Q4) | 10, 14 | Ask RudCo |
 | Does RudCo supply dual-certified stock against plain 304 without asking? | 09 | Ask RudCo with Q4 |
-| Does Nicrron accept `temperature` and JSON output for the chosen models? | 07 | Smoke test in task 07 |
-| Keys in `.env` (`NICRRON_API_KEY`, `PRISMTRACE_API_KEY`, `PRISMTRACE_PROJECT_ID`) | 07, 13 | User, before wave 1 |

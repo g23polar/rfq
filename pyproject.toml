@@ -3,7 +3,11 @@ name = "rfq"
 version = "0.1.0"
 description = "Agent that turns a messy RFQ into a reviewable draft quote"
 requires-python = ">=3.12,<3.14"
-dependencies = ["pydantic>=2.7"]
+dependencies = [
+    "openai>=1.40",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+]
 
 [dependency-groups]
 dev = ["pytest>=8"]
