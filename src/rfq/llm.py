@@ -58,8 +58,9 @@ def _cache_dir() -> Path:
     return Path(os.environ.get("RFQ_LLM_CACHE", ".cache/llm"))
 
 
-def _cache_path(model: str, messages: list[dict[str, str]]) -> Path:
-    digest = hashlib.sha256(json.dumps([model, messages], sort_keys=True).encode()).hexdigest()
+def _cache_path(model: str, messages: list[dict[str, str]], max_tokens: int = MAX_TOKENS) -> Path:
+    key = [model, messages] if max_tokens == MAX_TOKENS else [model, messages, max_tokens]
+    digest = hashlib.sha256(json.dumps(key, sort_keys=True).encode()).hexdigest()
     return _cache_dir() / f"{digest[:24]}.json"
 
 
@@ -69,14 +70,15 @@ def _send(model: str, messages: list[dict[str, str]], options: dict) -> tuple[st
 
     client = OpenAI(base_url=BASE_URL, api_key=os.environ["NICRRON_API_KEY"], timeout=TIMEOUT_S)
     response = client.chat.completions.create(model=model, messages=messages,
-                                              max_tokens=MAX_TOKENS, **options)
+                                              **{"max_tokens": MAX_TOKENS, **options})
     usage = response.usage
     return (response.choices[0].message.content or "",
             usage.prompt_tokens if usage else 0, usage.completion_tokens if usage else 0)
 
 
-def _complete(model: str, messages: list[dict[str, str]], attempt: int) -> CallRecord:
-    path = _cache_path(model, messages)
+def _complete(model: str, messages: list[dict[str, str]], attempt: int,
+              max_tokens: int = MAX_TOKENS) -> CallRecord:
+    path = _cache_path(model, messages, max_tokens)
     if path.exists() and not os.environ.get("RFQ_LLM_NO_CACHE"):
         saved = json.loads(path.read_text())
         return CallRecord(model=model, messages=messages, output=saved["output"],
@@ -87,7 +89,10 @@ def _complete(model: str, messages: list[dict[str, str]], attempt: int) -> CallR
                              f"{_cache_dir()} for this request.")
     started = time.monotonic()
     try:
-        output, tokens_in, tokens_out = _send(model, messages, MODEL_OPTIONS.get(model, {}))
+        options = dict(MODEL_OPTIONS.get(model, {}))
+        if max_tokens != MAX_TOKENS:
+            options["max_tokens"] = max_tokens
+        output, tokens_in, tokens_out = _send(model, messages, options)
     except Exception as e:  # the SDK has already retried transient failures
         raise ModelCallError(f"Nicrron request failed for {model}: {e}") from e
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -106,9 +111,10 @@ def _extract_json(text: str) -> str:
     return text[start:end + 1]
 
 
-def call_json(system: str, user: str, shape: type[T], model: str = MODEL_READ) -> ModelResult[T]:
+def call_json(system: str, user: str, shape: type[T], model: str = MODEL_READ,
+              max_tokens: int = MAX_TOKENS) -> ModelResult[T]:
     """Ask the model for JSON matching `shape`. One retry, with the validation error, if it
-    doesn't; then `ModelCallError`."""
+    doesn't; then `ModelCallError`. Raise `max_tokens` for long outputs such as a whole RFQ."""
     schema = json.dumps(shape.model_json_schema())
     messages = [
         {"role": "system", "content": f"{system}\n\nReply with one JSON object that matches "
@@ -119,7 +125,7 @@ def call_json(system: str, user: str, shape: type[T], model: str = MODEL_READ) -
     error: Exception | None = None
     for attempt in (1, 2):
         try:
-            record = _complete(model, messages, attempt)
+            record = _complete(model, messages, attempt, max_tokens)
         except ModelCallError as e:
             raise ModelCallError(str(e), calls) from e
         calls.append(record)

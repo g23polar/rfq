@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | Done (M scope) |
 | **Depends on** | 01, 07 |
 | **Unblocks** | 14 |
 
@@ -38,6 +38,19 @@ Where the buyer gave no line numbers, lines are numbered 1, 2, 3 in order.
 - **Spreadsheet** (`.xlsx`, `.csv`): no model call. Rows above the table are terms text; each row is a segment; the buyer's line-number column is preserved.
 - **Triage** (stage 0, IN-2): classify the message as new RFQ, revision or not an RFQ. A non-RFQ is labeled and not quoted.
 - **Wrapped and multi-item lines** (IN-7): join descriptions that wrap; split a line that asks for several items into linked lines.
+
+## As built
+
+- `src/rfq/intake.py` has two steps so the safety screen (task 05) can sit between them:
+  - `read_document(data, filename) -> Document`: no model. Extracts text (PDF via pypdf, with page ranges) and, for emails, strips history, quoted lines, disclaimers and signature contact lines. Each stripped piece is kept in `Document.stripped` with its range in the original.
+  - `segment(doc, withheld=[...], attachments=None) -> IntakeResult` makes one model call and returns `terms`, `lines` (each a `Line` holding its `Segment` and any `missing_attachment` issue), `dropped` (model quotes not found in the text) and `calls` (for task 13).
+- Withheld passages are blanked with spaces (`mask`), so the model never sees them and every location still points into `doc.cleaned`.
+- The top header block and the sign-off name stay in the cleaned text, because they carry the customer and the date. Only contact lines after the sign-off are cut.
+- Segment text leaves out the buyer's line number. A PDF table row reads `<qty> <uom> <description>`.
+- Buyer numbers are kept as written. Requirement and note lines get `-`. If no item has a number, items are numbered 1, 2, 3.
+- `llm.call_json` gained `max_tokens`. Segmentation uses 8000, because the 2000 default truncated the 8-line PDF. Non-default limits are part of the cache key.
+- Live check (`uv run python scripts/run_intake.py`): email 8 s, PDF 19 s, one call each, nothing dropped. The PDF's hidden instruction did not appear in any segment.
+- Not built: spreadsheet intake, triage and wrapped or multi-item lines (all stretch).
 
 ## Out of scope
 
