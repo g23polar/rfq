@@ -49,6 +49,7 @@ M: VR-4, EV-3. S: UX-8.
 - Calls answered from the local cache show 0 ms latency in PRISM. Use `RFQ_LLM_NO_CACHE=1` or a fresh RFQ for the demo run.
 - The pipeline (task 14) records through `record_run(run, trace)`, which `rfq.app` picks up automatically. It replays the pipeline's stage list and matches each model call to its stage by that stage's system prompt; each interpret call becomes its own "interpret line N" span. A full PDF run recorded 82 stage spans and 14 model calls.
 - `llm.py` now has two hooks: the pipeline's `watching()` (every thread) and the recorder's `capture()` (this context only). Both see every call.
+- Knowledge Base grounding: while recording, each line's stated assumptions (gauge thickness, default standard, sheet size, dual certification) are searched in the PRISM Knowledge Base (`/api/knowledge-base/search`, from the SDK). Each becomes a `retrieval` span, "grounding line N", holding the passage PRISM returned. Spot check on the email run: 5 of 5 claims returned a passage containing the exact supporting sentence. It runs after the quote is drafted, so it can't change or slow it.
 - Still open: the dashboard URL format for the stretch link.
 
 ## Out of scope

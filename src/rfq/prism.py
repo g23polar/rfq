@@ -132,13 +132,14 @@ class Recorder:
 
     def add(self, name: str, start: datetime, duration_ms: int, input: Any = None,
             output: Any = None, line: str | None = None, error: str | None = None,
-            calls: list[CallRecord] | None = None, parent: Span | None = None) -> Span:
+            calls: list[CallRecord] | None = None, parent: Span | None = None,
+            span_type: str = "chain") -> Span:
         """Record a stage that has already run."""
         with self._lock:
             self._count += 1
             n = self._count
         span = Span(name=f"{name} line {line}" if line else name, span_id=self._id(name, line, n),
-                    parent_span_id=(parent or self.root).span_id, span_type="chain",
+                    parent_span_id=(parent or self.root).span_id, span_type=span_type,
                     input=input, output=output, calls=list(calls or []), error=error,
                     metadata={"stage": name, **({"line": line} if line else {})},
                     start=start, end=start + timedelta(milliseconds=duration_ms))
@@ -301,10 +302,52 @@ def record_run(run, trace) -> str | None:
         rec.root.start = min(sp.start for sp in rec.spans)
         rec.root.end = max(sp.end for sp in rec.spans if sp.end)
     rec.root.input = run.source.filename or run.source.kind
+    _ground(rec, run)
     rec.set_output({"quote_status": run.quote_status, "counts": run.counts, "total": run.total,
                     "completeness": run.completeness,
                     "leak_check": run.leak_check.passed if run.leak_check else None})
     return rec.trace_id if rec.flush() else None
+
+
+GROUNDING_LIMIT = 12  # Knowledge Base searches per run
+
+
+def kb_search(query: str, limit: int = 1) -> list[dict]:
+    """Search the project's PRISM Knowledge Base (the SDK's `kb_search`). [] on any failure."""
+    host, key, project = settings()
+    if not key or not project:
+        return []
+    request = urllib.request.Request(
+        f"{host}/api/knowledge-base/search", method="POST",
+        data=json.dumps({"query": query, "project_id": project, "limit": limit}).encode(),
+        headers={"Content-Type": "application/json", "X-PRISMtrace-Key": key})
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT_S) as response:
+            return json.loads(response.read()).get("results", [])
+    except Exception as e:
+        log.warning("PRISM knowledge base search failed: %s", e)
+        return []
+
+
+def _ground(rec: Recorder, run) -> None:
+    """Ground each line's stated assumptions (gauge thickness, default standard, sheet size,
+    dual certification) in the reference data uploaded to the PRISM Knowledge Base: one
+    `retrieval` span per claim, under the line, with the passage PRISM returned. Runs while
+    recording, after the quote is drafted, so it never changes or slows a quote."""
+    claims = [(line.buyer_line_no, i.message) for line in run.lines for i in line.issues
+              if i.kind == "assumption"][:GROUNDING_LIMIT]
+    if not claims or not all(settings()[1:]):
+        return
+    from concurrent.futures import ThreadPoolExecutor
+    started = _now()
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        found = list(pool.map(lambda c: kb_search(c[1]), claims))
+    for (line_no, claim), hits in zip(claims, found):
+        top = hits[0] if hits else None
+        rec.add("grounding", started, 0, input=claim, line=line_no, span_type="retrieval",
+                output={"knowledge_base_passage": top.get("content", ""),
+                        "doc_id": top.get("doc_id"), "chunk_id": top.get("id")}
+                if top else "No passage found in the Knowledge Base.")
 
 
 def _post(host: str, key: str, path: str, payload: dict) -> bool:

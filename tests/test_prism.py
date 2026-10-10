@@ -141,3 +141,26 @@ def test_record_run_labels_every_stage_and_line_of_a_pipeline_run(sent, monkeypa
                                                         "interpret"}
     labels = [st["label"] for st in trajectory["steps"]]
     assert labels[0] == "intake.read" and labels[-1].startswith("rfq Q-")
+
+
+def test_record_run_grounds_assumptions_in_the_knowledge_base(sent, monkeypatch):
+    from rfq.models import Line, Run, RunSource, Segment, issue
+
+    searched = []
+    monkeypatch.setattr(prism, "kb_search", lambda q, limit=1: searched.append(q) or
+                        [{"content": "16 gauge stainless steel sheet is 0.0625 in thick.",
+                          "doc_id": "d1", "id": "c1"}])
+    line = Line(buyer_line_no="1", segment=Segment(buyer_line_no="1", text="304 SS sheet 16ga"),
+                issues=[issue("assumption", "16 ga stainless read as 0.0625 in."),
+                        issue("missing", "Quantity not stated.")])
+    run = Run(rfq_id="Q-1", created="2026-10-10T15:00:00+00:00",
+              source=RunSource(kind="text"), lines=[line])
+    prism.record_run(run, pipeline_trace())
+    assert searched == ["16 ga stainless read as 0.0625 in."]
+    span = next(s for s in sent[0][1]["spans"] if s["name"] == "grounding line 1")
+    assert span["span_type"] == "retrieval" and "0.0625 in thick" in span["output_text"]
+
+
+def pipeline_trace():
+    from rfq.pipeline import Trace
+    return Trace()
