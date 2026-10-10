@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | Blocked (waits on everything else) |
 | **Owner** | User |
 | **Depends on** | all |
 | **Deadline** | 4:30 PM EDT; target 4:15 PM |

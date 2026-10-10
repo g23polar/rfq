@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | Done |
 | **Depends on** | 01, 02 |
 | **Unblocks** | 14 |
 
@@ -55,3 +55,29 @@ Recognition is by fixed wording patterns, not a model call.
 - A line-level requirement overrides the RFQ-wide one in a test.
 - An item with no MTR data shows "unknown", and the line goes to specialist review.
 - Every result carries the source text of the requirement.
+
+## As built
+
+- Entry point: `compliance.check(line, ctx) -> Line` in `src/rfq/compliance.py`. Mutates and returns the line. Returns it untouched when no offer has a candidate. Offers without a candidate are skipped; offers with one get `offer.compliance` replaced (reruns do not duplicate results or issues).
+- Requirements: `ctx.terms.requirements` (scope `rfq`) and `line.reading.requirements` (scope `line`). Each is classified from `source_text` first (the buyer's words), and from `value` only when the source text yields nothing. Text is split into clauses on `;`, newline, "but", and ", no/not" so "DFARS required, no MTRs needed" is read as two requirements.
+- Wording recognized (case-insensitive):
+  - MTR: MTR, CMTR, mill test report/cert(s), material or test report/cert(s), "3.1 certs", EN 10204. Result name `Mill test report`.
+  - DFARS: DFARS, 252.225, specialty metals. Name `DFARS`. Country of melt in `rules.dfars.qualifying_countries`.
+  - Domestic with melt (domestic/USA/U.S./American/"no imports" plus the word melt): name `Domestic melt`, melt country must be US. "Melted and manufactured in USA" is this case.
+  - Domestic with manufacture only ("Made in USA"): name `Domestic manufacture`; unknown (the catalog has no manufacture country).
+  - Unqualified domestic: name `Domestic`; unknown. Not raised if DFARS is in the same clause.
+  - Specification: ASTM/ASME codes (`A240`, `ASTM A-240`, `SA-240`, `per A36`, `AMS-QQ-A-250/11`), compared as codes with case, spaces and hyphens ignored, against the item's `standard` and `certifications`. One result per code, or one result if the text says "or". `SA-240` is not satisfied by `A240` or the reverse; grade/type suffixes ("Grade B") are ignored. Name `Specification: ASTM A240`.
+  - Dual certification: `dual cert...`, optionally naming a pair (`304/304L`). Name `Dual certification[: 304/304L]`. Met when the item grade is dual-certified and names both grades.
+  - Anything else: result name is the earlier stage's label, result unknown, no issue.
+- Override: each requirement has a subject (mtr, origin = DFARS/domestic/manufacture, specification, dual; unrecognized ones are their own subject). If any line-level requirement has a subject, all RFQ-wide requirements of that subject are dropped. A waiver ("not required", "N/A", "import OK", "waived", "exempt") on a subject takes part in the override and produces no result, so the DFARS note is not shown for that line.
+- Issues:
+  - `open_question` (buyer, field `requirement`, options "Melted in the USA" / "Manufactured in the USA"): once per unqualified-domestic requirement.
+  - `unconfirmed` (internal, field `compliance`): unknown from missing item data (MTR unknown, blank/invalid melt country, manufacture-only, no recorded standard, SKU not in catalog) on MTR, origin or specification requirements. One per SKU and requirement.
+  - `unmet_requirement` (buyer, field `requirement`): one per distinct failed requirement, only when every offer with a candidate has at least one `not_met`.
+- Evidence states the fact only ("Country of melt: US.", "Mill test report available.").
+
+Deviations and decisions:
+- `RequirementResult.source_text` falls back to the label (`value`) when the Sourced has no `source_text`, so every result carries text.
+- Waived requirements leave no result at all (the plan does not say). Say so if the quote should show "not required".
+- Only the requirement lists are read; `reading.standard` (the line's own spec) is the matcher's concern.
+- Not built: stretch items (industry-specific requirements, SA-240-only matching beyond the code compare above).

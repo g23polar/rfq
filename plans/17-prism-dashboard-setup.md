@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | In progress (step 1 done: workspace, project and key exist) |
 | **Owner** | User |
 | **Depends on** | 02 (Knowledge Base document), 13 (a recorded run to attach to) |
 | **Unblocks** | 18 |

@@ -122,11 +122,14 @@ class Issue(BaseModel):
     audience: Audience
     message: str
     field: str | None = None
+    options: list[str] = Field(default_factory=list)  # the choices, for ambiguous_options and tie
 
 
-def issue(kind: IssueKind, message: str, field: str | None = None) -> Issue:
+def issue(kind: IssueKind, message: str, field: str | None = None,
+          options: list[str] | None = None) -> Issue:
     """Build an issue with the audience its kind always has."""
-    return Issue(kind=kind, audience=ISSUE_AUDIENCE[kind], message=message, field=field)
+    return Issue(kind=kind, audience=ISSUE_AUDIENCE[kind], message=message, field=field,
+                 options=options or [])
 
 
 class Spec(BaseModel):

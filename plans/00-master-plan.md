@@ -58,6 +58,8 @@ Priority follows the spec's key: **M** = must ship today, **S** = stretch today,
 
 Statuses: Not started, In progress, Blocked, Done. Update this table when a task changes state.
 
+As of 13:35 EDT, Oct 10: 12 of 19 done (01 to 12); 04 to 06 and 08 to 12 are must-ship scope only. "Not started" means ready to start: its dependencies are done. "Blocked" means it is waiting on tasks that are not done.
+
 | # | Task | Owner | Status | Depends on | Spec requirements (M) | Stretch in this task (S) |
 |---|---|---|---|---|---|---|
 | 01 | [Contracts and skeleton](01-contracts-and-skeleton.md) | Claude | Done | none | all (shared shapes) | none |
@@ -67,17 +69,17 @@ Statuses: Not started, In progress, Blocked, Done. Update this table when a task
 | 05 | [Safety screen](05-safety-screen.md) | Mihir | Done (M) | 01, 07 | SF-1 to SF-3 | none |
 | 06 | [Interpret](06-line-reading.md) | Mihir | Done (M) | 01, 07 | RD-1 to RD-4 | none |
 | 07 | [Model client](07-model-client.md) | Claude | Done | 01 | EV-2, NF-2 | NF-6 |
-| 08 | [Standardize and validate](08-standardize.md) | Unassigned | Not started | 01, 02 | RD-5 to RD-7 | RD-8, RD-9 |
-| 09 | [Resolve to catalog](09-match.md) | Unassigned | Not started | 01, 02 | MT-1, MT-3 to MT-5, DC-3 | MT-2 (second path) |
-| 10 | [Price](10-price.md) | Unassigned | Not started | 01, 02 | PR-1 to PR-4, PR-8 | PR-5 to PR-7, PR-10 |
-| 11 | [Compliance](11-compliance.md) | Unassigned | Not started | 01, 02 | CP-1 to CP-3, CP-5, CP-6 | CP-4 |
-| 12 | [Decide and verify](12-decide-and-verify.md) | Unassigned | Not started | 01, 07 | DC-1 to DC-4, SF-4, SF-5, VR-1 | none |
+| 08 | [Standardize and validate](08-standardize.md) | Claude (subagent) | Done (M) | 01, 02 | RD-5 to RD-7 | RD-8, RD-9 |
+| 09 | [Resolve to catalog](09-match.md) | Claude (subagent) | Done (M) | 01, 02 | MT-1, MT-3 to MT-5, DC-3 | MT-2 (second path) |
+| 10 | [Price](10-price.md) | Claude (subagent) | Done (M) | 01, 02 | PR-1 to PR-4, PR-8 | PR-5 to PR-7, PR-10 |
+| 11 | [Compliance](11-compliance.md) | Claude (subagent) | Done (M) | 01, 02 | CP-1 to CP-3, CP-5, CP-6 | CP-4 |
+| 12 | [Decide and verify](12-decide-and-verify.md) | Claude (subagent) | Done (M) | 01, 07 | DC-1 to DC-4, SF-4, SF-5, VR-1 | none |
 | 13 | [PRISM recording](13-prism-recording.md) | Unassigned | Not started | 01 | VR-4, EV-3 | UX-8 |
-| 14 | [Pipeline, review and API](14-pipeline-and-api.md) | Unassigned | Not started | 04 to 13, 19 | UX-3, UX-5, UX-6 | UX-4, UX-7, DC-5, NF-4 |
+| 14 | [Pipeline, review and API](14-pipeline-and-api.md) | Unassigned | Blocked | 04 to 13, 19 | UX-3, UX-5, UX-6 | UX-4, UX-7, DC-5, NF-4 |
 | 15 | [Review screen](15-web-ui.md) | Unassigned | Not started | 01 | UX-1 to UX-3, NF-8 | UX-4, UX-8 |
-| 16 | [Evaluation and README](16-evaluation-and-readme.md) | Unassigned | Not started | 03, 14 | QA-2, DC-1 | none |
-| 17 | [PRISM dashboard setup](17-prism-dashboard-setup.md) | User | Not started | 02, 13 | SF-1, MT-6, VR-2 | VR-3 |
-| 18 | [Submission](18-submission.md) | User | Not started | all | EV-9 | none |
+| 16 | [Evaluation and README](16-evaluation-and-readme.md) | Unassigned | Blocked | 03, 14 | QA-2, DC-1 | none |
+| 17 | [PRISM dashboard setup](17-prism-dashboard-setup.md) | User | In progress | 02, 13 | SF-1, MT-6, VR-2 | VR-3 |
+| 18 | [Submission](18-submission.md) | User | Blocked | all | EV-9 | none |
 | 19 | [Availability](19-availability.md) | Unassigned | Not started | 01, 02 | AV-1 | AV-2, AV-3 |
 
 ## Order of work

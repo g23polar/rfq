@@ -26,7 +26,7 @@ def price(weight_each, qty, mid, low, high, cost, grade_form):
         benchmark=Benchmark(low=low, mid=mid, high=high, source="synthetic", as_of="2026-10-01"),
         position="below_mid",
         rationale=(f"Priced at ${per_lb:.4f}/lb, 3.0% below the ${mid:.2f}/lb midpoint of the "
-                   f"{grade_form} benchmark range ${low:.2f}-${high:.2f}/lb "
+                   f"benchmark range ${low:.2f}-${high:.2f}/lb "
                    f"(synthetic data, as of 2026-10-01)."),
         numbers={"price_per_lb": per_lb, "benchmark_mid": mid, "benchmark_low": low,
                  "benchmark_high": high, "pct_below_mid": 3.0},

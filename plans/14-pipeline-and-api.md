@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | Blocked (waits on stage tasks 04 to 13 and 19) |
 | **Depends on** | 04 to 13, 19 |
 | **Unblocks** | 16, 18, and the live half of 15 |
 

@@ -91,6 +91,7 @@
           "source_text": "16ga",
           "source": "rfq_line"
         },
+        "wall": null,
         "width": null,
         "length": null,
         "diameter": null,
@@ -131,6 +132,7 @@
         "width_in": 48.0,
         "length_in": 96.0,
         "diameter_in": null,
+        "wall_in": null,
         "quantity": 10.0,
         "quantity_unit": "ea",
         "standard": "ASTM A240",
@@ -143,19 +145,22 @@
           "kind": "assumption",
           "audience": "buyer",
           "message": "\"4x8\" read as 4 ft x 8 ft, a standard sheet size.",
-          "field": "width"
+          "field": "width",
+          "options": []
         },
         {
           "kind": "assumption",
           "audience": "buyer",
           "message": "No standard stated; ASTM A240 is the default for 304 sheet.",
-          "field": "standard"
+          "field": "standard",
+          "options": []
         },
         {
           "kind": "assumption",
           "audience": "buyer",
           "message": "Supplied from dual-certified 304/304L stock.",
-          "field": "grade"
+          "field": "grade",
+          "options": []
         }
       ],
       "offers": [
@@ -169,6 +174,7 @@
             "width_in": null,
             "length_in": null,
             "diameter_in": null,
+            "wall_in": null,
             "quantity": null,
             "quantity_unit": null,
             "standard": null,
@@ -209,7 +215,7 @@
               "as_of": "2026-10-01"
             },
             "position": "below_mid",
-            "rationale": "Priced at $2.0370/lb, 3.0% below the $2.10/lb midpoint of the 304 sheet benchmark range $1.90-$2.35/lb (synthetic data, as of 2026-10-01).",
+            "rationale": "Priced at $2.0370/lb, 3.0% below the $2.10/lb midpoint of the benchmark range $1.90-$2.35/lb (synthetic data, as of 2026-10-01).",
             "numbers": {
               "price_per_lb": 2.037,
               "benchmark_mid": 2.1,
@@ -277,6 +283,7 @@
           "source": "rfq_line"
         },
         "gauge": null,
+        "wall": null,
         "width": {
           "value": "48",
           "unit": "in",
@@ -324,6 +331,7 @@
         "width_in": 48.0,
         "length_in": 96.0,
         "diameter_in": null,
+        "wall_in": null,
         "quantity": 4.0,
         "quantity_unit": "ea",
         "standard": "ASTM B209",
@@ -343,6 +351,7 @@
             "width_in": null,
             "length_in": null,
             "diameter_in": null,
+            "wall_in": null,
             "quantity": null,
             "quantity_unit": null,
             "standard": null,
@@ -383,7 +392,7 @@
               "as_of": "2026-10-01"
             },
             "position": "below_mid",
-            "rationale": "Priced at $2.5220/lb, 3.0% below the $2.60/lb midpoint of the 6061-T6 plate benchmark range $2.35-$2.95/lb (synthetic data, as of 2026-10-01).",
+            "rationale": "Priced at $2.5220/lb, 3.0% below the $2.60/lb midpoint of the benchmark range $2.35-$2.95/lb (synthetic data, as of 2026-10-01).",
             "numbers": {
               "price_per_lb": 2.522,
               "benchmark_mid": 2.6,
@@ -451,6 +460,7 @@
           "source_text": "16ga",
           "source": "rfq_line"
         },
+        "wall": null,
         "width": null,
         "length": null,
         "diameter": null,
@@ -491,6 +501,7 @@
         "width_in": 48.0,
         "length_in": 96.0,
         "diameter_in": null,
+        "wall_in": null,
         "quantity": 5.0,
         "quantity_unit": "ea",
         "standard": null,
@@ -503,13 +514,15 @@
           "kind": "ambiguous_options",
           "audience": "buyer",
           "message": "No grade stated. Common grades for stainless sheet: 304, 316.",
-          "field": "grade"
+          "field": "grade",
+          "options": []
         },
         {
           "kind": "assumption",
           "audience": "buyer",
           "message": "\"4x8\" read as 4 ft x 8 ft, a standard sheet size.",
-          "field": "width"
+          "field": "width",
+          "options": []
         }
       ],
       "offers": [
@@ -523,6 +536,7 @@
             "width_in": null,
             "length_in": null,
             "diameter_in": null,
+            "wall_in": null,
             "quantity": null,
             "quantity_unit": null,
             "standard": null,
@@ -563,7 +577,7 @@
               "as_of": "2026-10-01"
             },
             "position": "below_mid",
-            "rationale": "Priced at $2.0370/lb, 3.0% below the $2.10/lb midpoint of the 304 sheet benchmark range $1.90-$2.35/lb (synthetic data, as of 2026-10-01).",
+            "rationale": "Priced at $2.0370/lb, 3.0% below the $2.10/lb midpoint of the benchmark range $1.90-$2.35/lb (synthetic data, as of 2026-10-01).",
             "numbers": {
               "price_per_lb": 2.037,
               "benchmark_mid": 2.1,
@@ -596,6 +610,7 @@
             "width_in": null,
             "length_in": null,
             "diameter_in": null,
+            "wall_in": null,
             "quantity": null,
             "quantity_unit": null,
             "standard": null,
@@ -636,7 +651,7 @@
               "as_of": "2026-10-01"
             },
             "position": "below_mid",
-            "rationale": "Priced at $2.8615/lb, 3.0% below the $2.95/lb midpoint of the 316 sheet benchmark range $2.70-$3.30/lb (synthetic data, as of 2026-10-01).",
+            "rationale": "Priced at $2.8615/lb, 3.0% below the $2.95/lb midpoint of the benchmark range $2.70-$3.30/lb (synthetic data, as of 2026-10-01).",
             "numbers": {
               "price_per_lb": 2.8615,
               "benchmark_mid": 2.95,
@@ -706,6 +721,7 @@
         },
         "thickness": null,
         "gauge": null,
+        "wall": null,
         "width": null,
         "length": {
           "value": "12",
@@ -743,6 +759,7 @@
         "width_in": null,
         "length_in": null,
         "diameter_in": 1.0,
+        "wall_in": null,
         "quantity": 20.0,
         "quantity_unit": "ea",
         "standard": null,
@@ -755,7 +772,8 @@
           "kind": "missing",
           "audience": "buyer",
           "message": "Length \"12\" has no unit.",
-          "field": "length"
+          "field": "length",
+          "options": []
         }
       ],
       "offers": [],
@@ -812,6 +830,7 @@
           "source": "rfq_line"
         },
         "gauge": null,
+        "wall": null,
         "width": {
           "value": "48",
           "unit": "in",
@@ -849,6 +868,7 @@
         "width_in": 48.0,
         "length_in": 96.0,
         "diameter_in": null,
+        "wall_in": null,
         "quantity": 2.0,
         "quantity_unit": "ea",
         "standard": "ASTM A240",
@@ -861,13 +881,15 @@
           "kind": "assumption",
           "audience": "buyer",
           "message": "No standard stated; ASTM A240 is the default for 316 plate.",
-          "field": "standard"
+          "field": "standard",
+          "options": []
         },
         {
           "kind": "below_floor",
           "audience": "internal",
           "message": "Margin 5.3% is under the 12.0% floor.",
-          "field": "price"
+          "field": "price",
+          "options": []
         }
       ],
       "offers": [
@@ -881,6 +903,7 @@
             "width_in": null,
             "length_in": null,
             "diameter_in": null,
+            "wall_in": null,
             "quantity": null,
             "quantity_unit": null,
             "standard": null,
@@ -921,7 +944,7 @@
               "as_of": "2026-10-01"
             },
             "position": "below_mid",
-            "rationale": "Priced at $2.8615/lb, 3.0% below the $2.95/lb midpoint of the 316 plate benchmark range $2.70-$3.30/lb (synthetic data, as of 2026-10-01).",
+            "rationale": "Priced at $2.8615/lb, 3.0% below the $2.95/lb midpoint of the benchmark range $2.70-$3.30/lb (synthetic data, as of 2026-10-01).",
             "numbers": {
               "price_per_lb": 2.8615,
               "benchmark_mid": 2.95,
@@ -984,6 +1007,7 @@
         },
         "thickness": null,
         "gauge": null,
+        "wall": null,
         "width": null,
         "length": null,
         "diameter": null,
@@ -1030,6 +1054,7 @@
         "width_in": 36.0,
         "length_in": 96.0,
         "diameter_in": null,
+        "wall_in": null,
         "quantity": 3.0,
         "quantity_unit": "ea",
         "standard": null,
@@ -1042,7 +1067,8 @@
           "kind": "no_match",
           "audience": "buyer",
           "message": "We do not stock nickel alloy C276.",
-          "field": "grade"
+          "field": "grade",
+          "options": []
         }
       ],
       "offers": [],
