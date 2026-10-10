@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Blocked (waits on 03 and 14) |
+| **Status** | In progress: `README.md` and `tests/test_readme.py` done; `scripts/eval.py` and the report not started |
 | **Depends on** | 03, 14 |
 | **Unblocks** | 18 |
 

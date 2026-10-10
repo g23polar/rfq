@@ -77,7 +77,7 @@ As of 13:35 EDT, Oct 10: 12 of 19 done (01 to 12); 04 to 06 and 08 to 12 are mus
 | 13 | [PRISM recording](13-prism-recording.md) | Mihir | In progress | 01 | VR-4, EV-3 | UX-8 |
 | 14 | [Pipeline, review and API](14-pipeline-and-api.md) | Claude | Done (M) | 04 to 13, 19 | UX-3, UX-5, UX-6 | UX-4, UX-7, DC-5, NF-4 |
 | 15 | [Review screen](15-web-ui.md) | Mihir | In progress | 01 | UX-1 to UX-3, NF-8 | UX-4, UX-8 |
-| 16 | [Evaluation and README](16-evaluation-and-readme.md) | Unassigned | Blocked | 03, 14 | QA-2, DC-1 | none |
+| 16 | [Evaluation and README](16-evaluation-and-readme.md) | Claude | In progress | 03, 14 | QA-2, DC-1 | none |
 | 17 | [PRISM dashboard setup](17-prism-dashboard-setup.md) | User | In progress | 02, 13 | SF-1, MT-6, VR-2 | VR-3 |
 | 18 | [Submission](18-submission.md) | User | Blocked | all | EV-9 | none |
 | 19 | [Availability](19-availability.md) | Claude | Done | 01, 02 | AV-1 | AV-2, AV-3 |

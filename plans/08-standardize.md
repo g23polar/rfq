@@ -79,7 +79,7 @@ Decisions:
 - `304/304L` canonicalizes to grade "304"; "304/L?" and "304 or 304L?" give `ambiguous_options` with grade None. Aluminum written without its temper takes the stocked one, with an `assumption`.
 - A stated grade or form that is not recognized (Inconel 625) leaves the Spec field None with no `missing` issue, so matching can report `no_match`.
 - Material comes from the grade when not stated, with no issue. Stated material that disagrees with the grade gives a buyer `conflict`; the grade's material is kept.
-- A drawing reference is not special-cased; its lines still get required-field checks.
+- A line with a drawing reference skips the required-field checks: the buyer is asked once, for the drawing (changed while building task 14).
 - Fingerprint order: material, grade, form, thickness, width, length, diameter, wall, standard, finish, temper. Quantity is excluded. Part-number-only lines have no fingerprint.
 
 Deviations: the Q2 conversion to pieces is not stored (Spec has no field for it). Stretch items are not built.
