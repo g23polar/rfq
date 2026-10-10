@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | Done |
 | **Depends on** | 01 |
 | **Unblocks** | 03, 08, 09, 10, 11, 19, 17 |
 
@@ -43,6 +43,28 @@ Benchmarks are keyed by grade and form, not material and form: 304 and 316 canno
 - `surcharges.csv`: monthly stainless alloy surcharge by grade (PR-5).
 - Minimum order charge, cutting charge and quantity-break tiers in `rules.json` (PR-6, PR-7).
 - Pipe items with nominal size and schedule (U5).
+
+## As built
+
+- `load_reference()` in `src/rfq/reference.py` loads everything once into a `ReferenceData`, which has the lookups stages need: `item(sku)`, `grade_family(grade)`, `form_family(form)`, `benchmark_for(grade, form)`, `default_standard(grade, form)` and `lookup_part(customer, part_no)`.
+- Keys: benchmarks and default standards are keyed by **grade family** (`304/304L`, `304L` → `304`; `6061` → `6061-T6`) and **form family** (`round_bar` and `flat_bar` → `bar`; `round_tube` and `square_tube` → `tube`). Catalog forms are `sheet`, `plate`, `round_bar`, `flat_bar`, `round_tube`, `square_tube`, `pipe`; materials are `stainless`, `carbon`, `aluminum`. Aluminum grades include the temper (`6061-T6`).
+- CSVs carry the synthetic label as a leading `#` line; JSON files carry it as `_label`.
+- `lookup_part` ignores case and punctuation in both customer name and part number, and accepts a prefix in front of the stored number ("ACME-PN 88213" finds `88213`).
+- The stretch data is in too: `surcharges.csv`, minimum order charge, cutting charge and quantity breaks in `rules.json`, and pipe items with `nps` and `schedule` plus a pipe size table in `reference.json`. Only the data; the pricing logic that uses it belongs to task 10.
+- `out/knowledge_base.md` leaves out cost and supplier. `out/` is git-ignored, so rerun `uv run python scripts/export_kb.py` before uploading.
+
+Seeded items, for task 03's fixtures (demo customer: Acme Fabrication):
+
+| Case | Item |
+|---|---|
+| L1, M1 alternates | `SS-304L-SHT-0625-48X96` and `SS-316L-SHT-0625-48X96` (16 ga x 48 x 96) |
+| X3 tie | `SS-304L-SHT-1250-48X120-2B` and `-4`: 304/304L 11 ga x 48 x 120, differing only in finish. A request with no finish ties |
+| P2 | `SS-316L-RB-1500-144`: 316/316L 1-1/2 round bar, melted in IN, the only item of its kind |
+| P5 | `CS-A36-PLT-3750-48X96`: `mtr_available` unknown |
+| Q4 | `SS-304L-PLT-2500-48X96`: 3 in stock; ask for 8 or more |
+| PR-2 | `SS-316L-PLT-2500-48X96`: margin at target is 5.3%, the only item under the 12% floor (a test enforces this) |
+| L5 | Acme part number `88213` → `SS-304L-RB-1000-144`; Brightline Manufacturing's `88213` is a different item |
+| X4 | Nothing in nickel alloys or titanium (C276, Inconel, Ti) |
 
 ## Out of scope
 

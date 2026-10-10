@@ -1,0 +1,22 @@
+{
+  "_label": "SYNTHETIC DEMO DATA: pricing and compliance rules for the RFQ-to-Quote hackathon demo. The DFARS country list is illustrative; check DFARS 225.003 before any real use.",
+  "pricing": {
+    "target_multiplier_of_benchmark_mid": 0.97,
+    "margin_floor_pct": 12.0,
+    "validity_days": 7,
+    "stale_benchmark_days": 90,
+    "minimum_order_charge": 75.0,
+    "cutting_charge_per_cut": 12.5,
+    "quantity_breaks": [
+      {"min_qty": 1, "discount_pct": 0.0},
+      {"min_qty": 25, "discount_pct": 2.0},
+      {"min_qty": 100, "discount_pct": 4.0}
+    ]
+  },
+  "dfars": {
+    "basis": "country_of_melt",
+    "qualifying_countries": ["US", "AU", "AT", "BE", "CA", "CZ", "DK", "EG", "EE", "FI", "FR", "DE", "GR",
+                             "IL", "IT", "JP", "LV", "LT", "LU", "NL", "NO", "PL", "PT", "SI", "ES", "SE",
+                             "CH", "TR", "GB"]
+  }
+}

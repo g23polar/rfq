@@ -1,0 +1,7 @@
+# SYNTHETIC DEMO DATA: invented customer part numbers for the RFQ-to-Quote hackathon demo.
+customer,customer_part_no,sku
+Acme Fabrication,88213,SS-304L-RB-1000-144
+Acme Fabrication,88214,SS-304L-SHT-0625-48X96
+Acme Fabrication,AF-7720,CS-A36-PLT-2500-48X96
+Acme Fabrication,AF-7731,AL-6061T6-PLT-2500-48X96
+Brightline Manufacturing,88213,CS-1018-RB-1000-144

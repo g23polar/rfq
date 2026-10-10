@@ -1,0 +1,6 @@
+# SYNTHETIC DEMO DATA: invented monthly stainless alloy surcharges in $/lb for the RFQ-to-Quote hackathon demo. Not real mill surcharges.
+grade,month,surcharge_per_lb,source
+304,2026-09,0.74,synthetic
+304,2026-10,0.78,synthetic
+316,2026-09,1.16,synthetic
+316,2026-10,1.22,synthetic
