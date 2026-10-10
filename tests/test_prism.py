@@ -19,6 +19,7 @@ class Answer(BaseModel):
 def sent(monkeypatch):
     """Capture what would be posted to PRISM; the model answers from a fake."""
     posts = []
+    monkeypatch.setattr(prism, "BACKGROUND", False)
     monkeypatch.setenv("PRISMTRACE_API_KEY", KEY)
     monkeypatch.setenv("PRISMTRACE_PROJECT_ID", PROJECT)
     monkeypatch.setattr(prism, "_post", lambda host, key, path, payload:

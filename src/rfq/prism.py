@@ -253,11 +253,12 @@ class Recorder:
         if not key or not project:
             log.info("PRISM key or project not set; run %s not recorded", self.trace_id)
             return False
-        ok = _post(host, key, "/api/spans/ingest", self.ingest_payload(project))
-        ok = _post(host, key, "/api/trajectories", self.trajectory_payload(project)) and ok
-        for payload in self.trace_payloads(project):
-            ok = _post(host, key, "/api/traces", payload) and ok
-        return ok
+        posts = [("/api/spans/ingest", self.ingest_payload(project)),
+                 ("/api/trajectories", self.trajectory_payload(project)),
+                 *(("/api/traces", p) for p in self.trace_payloads(project))]
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=8) as pool:  # sequential posts took ~50 s a run
+            return all(pool.map(lambda p: _post(host, key, *p), posts))
 
 
 def _stage_prompts() -> dict[str, str]:
@@ -302,13 +303,28 @@ def record_run(run, trace) -> str | None:
         rec.root.start = min(sp.start for sp in rec.spans)
         rec.root.end = max(sp.end for sp in rec.spans if sp.end)
     rec.root.input = run.source.filename or run.source.kind
-    _ground(rec, run)
     rec.set_output({"quote_status": run.quote_status, "counts": run.counts, "total": run.total,
                     "completeness": run.completeness,
                     "leak_check": run.leak_check.passed if run.leak_check else None})
-    return rec.trace_id if rec.flush() else None
+    if not all(settings()[1:]):
+        return None
+    snapshot = run.model_copy(deep=True)  # the run may be edited or approved meanwhile
+
+    def send() -> None:
+        _ground(rec, snapshot)
+        if not rec.flush():
+            log.warning("PRISM did not accept all of run %s (trace %s)", run.rfq_id, rec.trace_id)
+
+    if BACKGROUND:
+        # Recording happens after the quote is returned: it used to add ~50 s to every
+        # upload. Not a daemon thread, so a script waits for it before exiting.
+        threading.Thread(target=send, name=f"prism-{run.rfq_id}").start()
+    else:
+        send()
+    return rec.trace_id
 
 
+BACKGROUND = True  # tests set False to see what was sent
 GROUNDING_LIMIT = 12  # Knowledge Base searches per run
 
 
