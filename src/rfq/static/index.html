@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RFQ-to-Quote: review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* The specialist's bench: graphite, steel and one oxide accent. Anything hazard-striped is
+   internal and never leaves the building; the buyer's quote is the paper it produces. */
+:root{
+  --bg:#14171a; --panel:#1c2024; --raise:#252a2f; --line:#343b42; --ink:#ece7dc; --dim:#98a1a9;
+  --oxide:#f0622a; --oxide-d:#c2410c; --ok:#7fd1a0; --warn:#f2c14e; --paper:#f6f3ec;
+  --display:'Big Shoulders Display','Oswald','Arial Narrow',sans-serif;
+  --body:'IBM Plex Sans','Segoe UI','Helvetica Neue',sans-serif;
+  --mono:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
+  --stripes:repeating-linear-gradient(135deg,rgba(240,98,42,.9) 0 6px,#14171a 6px 12px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--body);
+  background-image:radial-gradient(1200px 500px at 85% -10%,rgba(240,98,42,.10),transparent 60%),
+  repeating-linear-gradient(90deg,transparent 0 79px,rgba(255,255,255,.018) 79px 80px)}
+button{font:inherit;color:inherit;cursor:pointer}
+.app{display:grid;grid-template-columns:340px 1fr;min-height:100%}
+
+/* ---- rail ---- */
+.rail{background:var(--panel);border-right:1px solid var(--line);padding:22px 20px 28px;position:sticky;top:0;
+  height:100vh;overflow:auto;display:flex;flex-direction:column;gap:22px}
+.brand{font:800 34px/.9 var(--display);letter-spacing:.02em;text-transform:uppercase}
+.brand span{display:block;color:var(--oxide)}
+.brand small{display:block;margin-top:8px;font:500 10px/1.4 var(--mono);letter-spacing:.2em;color:var(--dim)}
+.label{font:600 10px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+.drop{display:block;border:1px dashed #56606a;padding:16px 12px;text-align:center;color:var(--dim);cursor:pointer;
+  transition:border-color .15s,background .15s,color .15s}
+.drop:hover,.drop.over{border-color:var(--oxide);color:var(--ink);background:rgba(240,98,42,.07)}
+.drop b{display:block;color:var(--ink);font-weight:600}
+textarea{width:100%;min-height:84px;margin-top:10px;background:#111417;border:1px solid var(--line);color:var(--ink);
+  font:13px/1.5 var(--mono);padding:9px 10px;resize:vertical}
+textarea:focus{outline:1px solid var(--oxide);border-color:var(--oxide)}
+.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.btn{background:var(--raise);border:1px solid var(--line);padding:8px 12px;font:600 11px/1 var(--mono);
+  letter-spacing:.12em;text-transform:uppercase;transition:background .15s,border-color .15s,transform .05s}
+.btn:hover{border-color:var(--oxide)}.btn:active{transform:translateY(1px)}
+.btn.go{background:var(--oxide);border-color:var(--oxide);color:#14171a}
+.btn.go:hover{background:#ff7a45}
+.btn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line)}
+.btn.big{width:100%;padding:14px;font:800 22px/1 var(--display);letter-spacing:.1em}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font:13px/1.4 var(--mono);margin:0}
+.meta dt{color:var(--dim)}.meta dd{margin:0;text-align:right;overflow-wrap:anywhere}
+.total{font:800 40px/1 var(--display);letter-spacing:.02em}
+.total small{display:block;font:500 10px/1.5 var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.bar{display:flex;height:10px;gap:2px;margin:10px 0 8px}
+.bar i{display:block;min-width:6px;transition:flex-grow .6s cubic-bezier(.2,.8,.2,1)}
+.legend{list-style:none;margin:0;padding:0;font:12px/1.9 var(--mono)}
+.legend li{display:flex;justify-content:space-between;gap:10px}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;margin-right:8px;background:var(--c)}
+.approve-note{font-size:12.5px;color:var(--dim);margin:8px 0 0}
+.approved{border:2px solid var(--ok);color:var(--ok);padding:10px 12px;font:800 22px/1 var(--display);
+  letter-spacing:.12em;text-transform:uppercase;text-align:center}
+.approved small{display:block;margin-top:5px;font:500 10px/1.4 var(--mono);letter-spacing:.08em;text-transform:none}
+.synthetic{margin-top:auto;font:11px/1.5 var(--mono);color:var(--dim);border-top:1px solid var(--line);padding-top:12px}
+
+/* ---- main ---- */
+main{padding:26px 30px 80px;min-width:0}
+.empty{max-width:640px;margin:14vh auto 0;text-align:left}
+.empty h1{font:800 76px/.9 var(--display);text-transform:uppercase;margin:0 0 18px;letter-spacing:.01em}
+.empty h1 em{font-style:normal;color:var(--oxide)}
+.empty p{color:var(--dim);font-size:16px;max-width:52ch}
+.working{max-width:560px;margin:18vh auto 0}
+.working h2{font:800 44px/1 var(--display);text-transform:uppercase;margin:0 0 6px}
+.working p{color:var(--dim);margin:0 0 18px}
+.track{height:6px;background:var(--raise);overflow:hidden}
+.track i{display:block;height:100%;width:34%;background:var(--stripes);animation:slide 1.1s linear infinite}
+.steps{list-style:none;padding:0;margin:18px 0 0;font:12px/2 var(--mono);color:var(--dim);columns:2}
+.error{border:1px solid var(--oxide);background:rgba(240,98,42,.08);padding:12px 14px;margin-bottom:16px}
+h2.sec{font:800 24px/1 var(--display);letter-spacing:.1em;text-transform:uppercase;margin:34px 0 12px;
+  display:flex;align-items:center;gap:14px}
+h2.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+h2.sec small{font:500 11px/1 var(--mono);letter-spacing:.12em;color:var(--dim)}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  border-bottom:2px solid var(--ink);padding-bottom:14px}
+.head h1{font:800 48px/.95 var(--display);text-transform:uppercase;margin:0}
+.head h1 span{display:block;font:600 17px/1.5 var(--mono);color:var(--oxide);letter-spacing:.04em;text-transform:none}
+.head .row{margin:0}
+
+/* line rows */
+.line{border:1px solid var(--line);background:var(--panel);margin-bottom:8px;animation:rise .4s ease both}
+.line summary{list-style:none;display:grid;grid-template-columns:64px minmax(0,1.5fr) minmax(0,1.3fr) 150px 120px 22px;
+  gap:14px;align-items:center;padding:12px 14px;cursor:pointer}
+.line summary::-webkit-details-marker{display:none}
+.line summary:hover{background:var(--raise)}
+.line[open]>summary{background:var(--raise);border-bottom:1px solid var(--line)}
+.no{font:800 34px/1 var(--display)}
+.asked{font-style:italic;color:#cfc9bd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{display:inline-block;margin-top:5px;padding:2px 7px;border:1px solid var(--c);color:var(--c);
+  font:600 9.5px/1.5 var(--mono);letter-spacing:.1em;text-transform:uppercase;font-style:normal}
+.offered{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.offered small{display:block;font:400 12px/1.5 var(--mono);color:var(--dim)}
+.avail{font:12px/1.4 var(--mono);color:var(--dim)}
+.money{text-align:right;font:600 15px/1.3 var(--mono);font-variant-numeric:tabular-nums}
+.money small{display:block;font-weight:400;font-size:12px;color:var(--dim)}
+.chev{color:var(--dim);transition:transform .2s}
+.line[open] .chev{transform:rotate(90deg);color:var(--oxide)}
+.line.review{position:relative;padding-left:8px;border-color:#5b3a26}
+.line.review::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--stripes)}
+.line.note summary{grid-template-columns:64px 1fr 22px}
+
+/* detail */
+.detail{padding:18px 18px 22px 92px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px 30px}
+.detail>section{min-width:0}
+.detail .wide{grid-column:1/-1}
+.h{font:600 10px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:0 0 9px}
+.source{font:16px/1.8 var(--mono);background:#111417;border:1px solid var(--line);padding:12px 14px;overflow-wrap:anywhere}
+.source mark{background:rgba(240,98,42,.16);color:var(--ink);border-bottom:2px solid var(--oxide);padding:1px 1px;
+  transition:background .12s,color .12s}
+.source mark.hot{background:var(--oxide);color:#14171a}
+.source.dimmed mark:not(.hot){background:transparent;border-bottom-color:#4a525a;color:var(--dim)}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.field{border:1px solid var(--line);padding:7px 9px;cursor:default;transition:border-color .12s,background .12s}
+.field:hover,.field.hot{border-color:var(--oxide);background:rgba(240,98,42,.08)}
+.field b{display:block;font:600 9.5px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.field span{font:500 14px/1.4 var(--mono)}
+.field i{display:block;font:italic 11.5px/1.4 var(--body);color:var(--dim)}
+.field.assumed{border-style:dashed}
+ul.issues{list-style:none;margin:0;padding:0}
+ul.issues li{padding:7px 0 7px 14px;border-left:2px solid var(--c,var(--dim));margin-bottom:6px}
+ul.issues b{font:600 9.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--c,var(--dim));
+  display:block;margin-bottom:3px}
+.internal{position:relative;border:1px solid #5b3a26;background:rgba(240,98,42,.05);padding:12px 14px 12px 22px}
+.internal::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--stripes)}
+.internal>.h{color:var(--oxide)}
+.offers{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.offer{border:1px solid var(--line);background:#181c20;padding:14px}
+.offer .opt{display:inline-block;background:var(--ink);color:#14171a;font:600 10px/1 var(--mono);letter-spacing:.16em;
+  text-transform:uppercase;padding:4px 8px;margin-bottom:8px}
+.offer h4{margin:0;font:600 15px/1.35 var(--body)}
+.offer .sku{font:12px/1.6 var(--mono);color:var(--dim)}
+.offer p{margin:8px 0 0;font-size:13px;color:#cfc9bd}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:10px 0 0;font:13px/1.5 var(--mono)}
+.kv dt{color:var(--dim)}.kv dd{margin:0;text-align:right}
+.range{position:relative;height:38px;margin:16px 0 22px}
+.range .band{position:absolute;top:14px;height:10px;background:#3a424a}
+.range .tick{position:absolute;top:8px;width:2px;height:22px;background:var(--ink)}
+.range .mk{position:absolute;top:2px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;
+  border-top:11px solid var(--oxide);transform:translateX(-7px)}
+.range .cost{position:absolute;top:10px;width:4px;height:18px;background:var(--stripes);transform:translateX(-2px)}
+.range span{position:absolute;top:28px;font:11px/1 var(--mono);color:var(--dim);transform:translateX(-50%);white-space:nowrap}
+.range span.p{top:-12px;color:var(--oxide);font-weight:600}
+ul.comp{list-style:none;margin:10px 0 0;padding:0;font-size:13px}
+ul.comp li{display:grid;grid-template-columns:78px 1fr;gap:10px;padding:5px 0;border-top:1px solid var(--line)}
+ul.comp b{font:600 10px/1.9 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+ul.comp q{display:block;color:var(--dim);font-style:italic;quotes:"\201C" "\201D"}
+.q{border:1px solid var(--warn);padding:10px 12px;color:var(--ink)}
+.q b{color:var(--warn)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chips span{border:1px solid var(--line);padding:2px 8px;font:12px/1.6 var(--mono)}
+pre.email{background:var(--paper);color:#14181c;font:13px/1.6 var(--mono);padding:18px 20px;white-space:pre-wrap;margin:0;
+  border-top:10px solid #14181c}
+.withheld{border:1px solid var(--oxide);padding:12px 14px 12px 24px;position:relative;margin-bottom:8px}
+.withheld::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10px;background:var(--stripes)}
+.withheld code{display:block;font:14px/1.6 var(--mono);color:var(--ink);text-decoration:line-through;
+  text-decoration-color:var(--oxide)}
+.withheld small{color:var(--dim)}
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.terms div{border:1px solid var(--line);padding:9px 11px}
+a{color:var(--oxide)}
+a.btn{color:var(--ink);text-decoration:none;display:inline-block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes slide{from{transform:translateX(-110%)}to{transform:translateX(320%)}}
+@media (max-width:1080px){.app{grid-template-columns:1fr}.rail{position:static;height:auto}
+  .line summary{grid-template-columns:48px 1fr 22px}.line summary .offered,.line summary .avail,.line summary .money{display:none}
+  .detail{padding-left:18px;grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail">
+    <div class="brand">RFQ <span>to Quote</span><small>SPECIALIST REVIEW BENCH</small></div>
+
+    <div>
+      <p class="label">New request</p>
+      <label class="drop" id="drop"><b>Drop an RFQ here</b>email text or PDF, or click to choose
+        <input type="file" id="file" accept=".txt,.eml,.pdf,text/plain,application/pdf" hidden></label>
+      <textarea id="paste" placeholder="or paste the request, or type one line:&#10;304 SS sheet 16ga 4x8 - 10 ea"></textarea>
+      <div class="row">
+        <button class="btn go" id="send">Draft quote</button>
+        <button class="btn" data-sample="email">Sample email</button>
+        <button class="btn" data-sample="pdf">Sample PDF</button>
+      </div>
+    </div>
+
+    <div id="side"></div>
+    <p class="synthetic">Demonstration. The catalog, stock, costs and market benchmarks are synthetic data, not real offers.</p>
+  </aside>
+
+  <main id="main">
+    <div class="empty">
+      <h1>Every line <em>answered.</em><br>No guess hidden.</h1>
+      <p>Drop in a messy RFQ. You get a draft quote with each value traced to the buyer's words, each price set against the market, and the lines that need your judgment at the top. Nothing goes to the buyer until you approve it.</p>
+    </div>
+  </main>
+</div>
+
+<script>
+const STATUS = {
+  needs_specialist_review: {label: "Needs your review", color: "#f0622a", rank: 0},
+  needs_buyer_input:       {label: "Needs buyer input", color: "#f2c14e", rank: 1},
+  quoted_with_alternates:  {label: "Quoted with alternates", color: "#8ab4f8", rank: 2},
+  quoted_with_assumptions: {label: "Quoted with assumptions", color: "#b7d98b", rank: 3},
+  quoted:                  {label: "Quoted", color: "#7fd1a0", rank: 4},
+  no_bid:                  {label: "No bid", color: "#98a1a9", rank: 5},
+  not_an_item:             {label: "Note", color: "#5d666e", rank: 6},
+};
+const ISSUE = {
+  missing: "Missing", conflict: "Conflict", missing_attachment: "Missing attachment",
+  ambiguous_options: "Ambiguous", tie: "Tie", substitution: "Substitute offered",
+  open_question: "Open question", assumption: "Assumed", no_match: "No match",
+  unmet_requirement: "Requirement not met", below_floor: "Under margin floor", weak_match: "Weak match",
+  paths_disagree: "Matching paths disagree", withheld_text: "Text withheld", unconfirmed: "Cannot confirm",
+  verification_failed: "Verification failed", model_failed: "Step failed",
+  price_out_of_range: "Price out of range", stale_benchmark: "Stale benchmark",
+};
+const FIELD = {material: "Material", grade: "Grade", form: "Form", thickness: "Thickness", gauge: "Gauge",
+  wall: "Wall", width: "Width", length: "Length", diameter: "Diameter", quantity: "Quantity",
+  standard: "Standard", finish: "Finish", temper: "Temper", tolerance: "Tolerance",
+  customer_part_no: "Customer part no.", drawing_ref: "Drawing"};
+const SPEC = {material: "Material", grade: "Grade", form: "Form", thickness_in: "Thickness", width_in: "Width",
+  length_in: "Length", diameter_in: "Diameter", wall_in: "Wall", quantity: "Quantity", standard: "Standard",
+  finish: "Finish", temper: "Temper"};
+// Which reading fields back each standardized field, for the hover-to-source link.
+const BACKS = {material: ["material", "grade"], grade: ["grade"], form: ["form"],
+  thickness_in: ["thickness", "gauge", "dim"], width_in: ["width", "dim"], length_in: ["length", "dim"],
+  diameter_in: ["diameter", "dim"], wall_in: ["wall"], quantity: ["quantity"], standard: ["standard"],
+  finish: ["finish", "material"], temper: ["temper", "grade"]};
+const COMP = {met: "#7fd1a0", not_met: "#f0622a", unknown: "#f2c14e"};
+const STEPS = ["Read and strip the thread", "Screen for manipulation", "Split into lines", "Read each line",
+  "Standardize", "Match to catalog", "Check stock", "Price", "Check compliance", "Decide and verify"];
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+const money = (v) => "$" + Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const num = (v) => Number(v).toLocaleString("en-US", {maximumFractionDigits: 4});
+let run = null, timer = null;
+
+function availability(a, unit) {
+  if (!a) return "Availability not checked";
+  const lead = a.lead_time_days ? ` in about ${a.lead_time_days} days` : "";
+  if (a.status === "in_stock") return "In stock";
+  if (a.status === "partial") return `${num(a.available_qty)} ${unit} now, ${num(a.shortfall_qty)} more${lead}`;
+  return "Not stocked" + (lead ? `; available${lead}` : "");
+}
+
+// The buyer's text with every sourced value marked, so a field can point back at its evidence.
+function sourceMarkup(line) {
+  const text = line.segment.text, lower = text.toLowerCase(), ranges = [];
+  const add = (key, s) => {
+    if (!s || !s.source_text || s.source !== "rfq_line") return;
+    const at = lower.indexOf(String(s.source_text).toLowerCase());
+    if (at >= 0) ranges.push({start: at, end: at + s.source_text.length, keys: [key]});
+  };
+  const r = line.reading || {};
+  for (const key of Object.keys(FIELD)) add(key, r[key]);
+  (r.unlabeled_dimensions || []).forEach((s) => add("dim", s));
+  (r.requirements || []).forEach((s) => add("requirement", s));
+  ranges.sort((a, b) => a.start - b.start || b.end - a.end);
+  const merged = [];
+  for (const g of ranges) {
+    const last = merged[merged.length - 1];
+    if (last && g.start < last.end) { last.end = Math.max(last.end, g.end); last.keys.push(...g.keys); }
+    else merged.push({...g, keys: [...g.keys]});
+  }
+  let out = "", pos = 0;
+  for (const g of merged) {
+    out += esc(text.slice(pos, g.start)) + `<mark data-keys="${esc([...new Set(g.keys)].join(" "))}">${esc(text.slice(g.start, g.end))}</mark>`;
+    pos = g.end;
+  }
+  return out + esc(text.slice(pos));
+}
+
+function readingFields(line) {
+  const r = line.reading || {}, cells = [];
+  for (const [key, label] of Object.entries(FIELD)) {
+    const s = r[key];
+    if (s) cells.push(`<div class="field" data-keys="${key}"><b>${label}</b><span>${esc(s.value)}${s.unit ? " " + esc(s.unit) : ""}</span></div>`);
+  }
+  (r.unlabeled_dimensions || []).forEach((s, i) => cells.push(
+    `<div class="field" data-keys="dim"><b>Dimension ${i + 1}, unlabeled</b><span>${esc(s.value)}${s.unit ? " " + esc(s.unit) : ""}</span></div>`));
+  (r.requirements || []).forEach((s) => cells.push(
+    `<div class="field" data-keys="requirement"><b>Requirement</b><span>${esc(s.value)}</span></div>`));
+  if (!cells.length) return "<p style='color:var(--dim);margin:0'>Nothing was read from this line.</p>";
+  const dropped = (r.discarded || []).map((d) => `<li style="--c:var(--oxide)"><b>Discarded: ${esc(d.field)}</b>${esc(d.value)} (${esc(d.reason)})</li>`).join("");
+  return `<div class="fields">${cells.join("")}</div>${dropped ? `<ul class="issues" style="margin-top:10px">${dropped}</ul>` : ""}`;
+}
+
+function specFields(line) {
+  const spec = line.spec || {}, assumed = new Set(line.issues.filter((i) => i.kind === "assumption").map((i) => i.field));
+  const cells = [];
+  for (const [key, label] of Object.entries(SPEC)) {
+    if (spec[key] == null) continue;
+    const base = key.replace("_in", "");
+    let value = key.endsWith("_in") ? num(spec[key]) + " in" : esc(spec[key]);
+    if (key === "quantity") value = num(spec.quantity) + " " + esc(spec.quantity_unit || "");
+    const isAssumed = assumed.has(base) || assumed.has(key);
+    cells.push(`<div class="field ${isAssumed ? "assumed" : ""}" data-keys="${(BACKS[key] || []).join(" ")}"><b>${label}</b><span>${value}</span>${isAssumed ? "<i>assumed, see below</i>" : ""}</div>`);
+  }
+  return cells.length ? `<div class="fields">${cells.join("")}</div>` : "<p style='color:var(--dim);margin:0'>No specification could be built.</p>";
+}
+
+function rangeBar(p) {
+  const b = p.benchmark, price = p.numbers && p.numbers.price_per_lb;
+  if (!b || price == null) return "";
+  const lo = Math.min(b.low, price, p.cost_per_lb) * 0.97, hi = Math.max(b.high, price) * 1.03;
+  const at = (v) => ((v - lo) / (hi - lo) * 100).toFixed(2) + "%";
+  return `<div class="range" title="Market benchmark range, our price, and (internal) our cost">
+    <div class="band" style="left:${at(b.low)};width:calc(${at(b.high)} - ${at(b.low)})"></div>
+    <div class="tick" style="left:${at(b.mid)}"></div>
+    <div class="cost" style="left:${at(p.cost_per_lb)}"></div>
+    <div class="mk" style="left:${at(price)}"></div>
+    <span class="p" style="left:${at(price)}">$${price.toFixed(4)}</span>
+    <span style="left:${at(b.low)}">${money(b.low)}</span><span style="left:${at(b.mid)}">mid ${money(b.mid)}</span>
+    <span style="left:${at(b.high)}">${money(b.high)}</span></div>`;
+}
+
+function offerCard(o, many) {
+  const c = o.candidate, p = o.price, unit = o.spec.quantity_unit || "";
+  const comp = (o.compliance || []).map((r) => `<li style="--c:${COMP[r.result]}"><b>${r.result.replace("_", " ")}</b>
+    <div>${esc(r.requirement)} <span style="color:var(--dim)">(${r.scope === "rfq" ? "whole RFQ" : "this line"})</span><br>${esc(r.evidence)}
+    ${r.source_text ? `<q>${esc(r.source_text)}</q>` : ""}</div></li>`).join("");
+  const priceBlock = p ? `
+    <dl class="kv"><dt>Unit price</dt><dd>${money(p.unit_price)} / ${esc(p.unit)}</dd>
+      <dt>Extended</dt><dd><strong>${money(p.extended)}</strong></dd>
+      <dt>Weight</dt><dd>${num(p.weight_lb)} lb</dd><dt>Valid until</dt><dd>${esc(p.valid_until)}</dd></dl>
+    ${rangeBar(p)}
+    <p>${esc(p.rationale)}</p>
+    <div class="internal" style="margin-top:12px"><p class="h">Internal: never shown to the buyer</p>
+      <dl class="kv" style="margin:0"><dt>Our cost</dt><dd>$${Number(p.cost_per_lb).toFixed(4)} / lb</dd>
+      <dt>Margin</dt><dd style="color:${p.margin_pct < p.floor_margin_pct ? "var(--oxide)" : "var(--ok)"}">${p.margin_pct}%</dd>
+      <dt>Margin floor</dt><dd>${p.floor_margin_pct}%</dd></dl></div>` : `<p style="color:var(--warn)">Not priced.</p>`;
+  return `<div class="offer">${many ? `<span class="opt">${esc(o.label)}</span>` : ""}
+    ${c ? `<h4>${esc(c.description)}</h4><div class="sku">${esc(c.sku)}</div>
+      <div class="chips"><span>match ${(c.strength * 100).toFixed(0)}%</span><span>found by ${c.via === "cross_reference" ? "customer part number" : "specification"}</span>
+      <span>${esc(availability(o.availability, unit))}</span></div>
+      ${(c.differences || []).length ? `<p>${c.differences.map(esc).join("; ")}</p>` : ""}` : "<h4>No catalog item</h4>"}
+    ${priceBlock}${comp ? `<ul class="comp">${comp}</ul>` : ""}</div>`;
+}
+
+function issueList(line, audience) {
+  const items = line.issues.filter((i) => i.audience === audience);
+  if (!items.length) return `<p style="color:var(--dim);margin:0">None.</p>`;
+  const color = (k) => k === "assumption" ? "#b7d98b" : audience === "internal" ? "var(--oxide)" : "var(--warn)";
+  return `<ul class="issues">${items.map((i) => `<li style="--c:${color(i.kind)}"><b>${ISSUE[i.kind] || esc(i.kind)}</b>${esc(i.message)}
+    ${(i.options || []).length ? `<div class="chips">${i.options.map((o) => `<span>${esc(o)}</span>`).join("")}</div>` : ""}</li>`).join("")}</ul>`;
+}
+
+function lineRow(line, n) {
+  const st = STATUS[line.status] || STATUS.not_an_item;
+  const badge = `<span class="badge" style="--c:${st.color}">${st.label}</span>`;
+  if (line.status === "not_an_item") {
+    return `<details class="line note" style="animation-delay:${n * 40}ms"><summary><span class="no" style="color:var(--dim)">&sect;</span>
+      <div><div class="asked">${esc(line.segment.text)}</div>${badge}</div><span class="chev">&#9656;</span></summary>
+      <div class="detail"><section class="wide"><p class="h">What it is</p>
+      <p style="margin:0">A ${esc(line.segment.kind)} in the request, not an item to price. Requirements apply to every line.</p></section></div></details>`;
+  }
+  const first = line.offers[0], priced = line.offers.filter((o) => o.price);
+  const unit = first ? (first.spec.quantity_unit || "") : "";
+  const many = line.offers.length > 1;
+  const offered = !first || !first.candidate ? `<div class="offered" style="color:var(--dim);font-weight:400">no catalog item</div>`
+    : `<div class="offered">${many ? `${line.offers.length} options` : esc(first.candidate.description)}<small>${esc(many ? line.offers.map((o) => o.candidate ? o.candidate.sku : "").join(" / ") : first.candidate.sku)}</small></div>`;
+  const lowest = Math.min(...priced.map((o) => o.price.extended)), highest = Math.max(...priced.map((o) => o.price.extended));
+  const cash = !priced.length ? `<div class="money"><small>no price</small></div>`
+    : many && lowest !== highest ? `<div class="money">${money(lowest)}<small>to ${money(highest)}</small></div>`
+    : many ? `<div class="money">${money(lowest)}<small>either option</small></div>`
+    : `<div class="money">${money(first.price.extended)}<small>${money(first.price.unit_price)} / ${esc(first.price.unit)}</small></div>`;
+  const review = line.status === "needs_specialist_review";
+  return `<details class="line ${review ? "review" : ""}" style="animation-delay:${n * 40}ms" ${review ? "open" : ""}>
+    <summary><span class="no">${esc(line.buyer_line_no)}</span>
+      <div><div class="asked">${esc(line.segment.text)}</div>${badge}</div>${offered}
+      <div class="avail">${first ? esc(availability(first.availability, unit)) : ""}</div>${cash}<span class="chev">&#9656;</span></summary>
+    <div class="detail">
+      ${review && line.review_note ? `<section class="wide internal"><p class="h">Why this is held: internal</p><p style="margin:0">${esc(line.review_note)}</p></section>` : ""}
+      ${line.question ? `<section class="wide"><div class="q"><b>${line.question.blocking ? "Question for the buyer (blocks the price)" : "Question for the buyer (line is already priced)"}</b><br>${esc(line.question.text)}</div></section>` : ""}
+      <section class="wide"><p class="h">What the buyer wrote: hover a field to see where it came from</p>
+        <div class="source">${sourceMarkup(line)}</div></section>
+      <section><p class="h">Read from the line, as written</p>${readingFields(line)}</section>
+      <section><p class="h">Standardized specification</p>${specFields(line)}</section>
+      <section><p class="h">For the buyer: assumptions and open items</p>${issueList(line, "buyer")}</section>
+      <section class="internal"><p class="h">Internal issues</p>${issueList(line, "internal")}
+        ${line.verification ? `<p style="margin:8px 0 0;font:12px/1.5 var(--mono);color:${line.verification.passed ? "var(--ok)" : "var(--oxide)"}">Verification ${line.verification.passed ? "passed" : "failed: " + esc(line.verification.failures.join("; "))}</p>` : ""}</section>
+      <section class="wide"><p class="h">${many ? "Priced options" : "Matched item and price"}</p>
+        ${line.offers.length ? `<div class="offers">${line.offers.map((o) => offerCard(o, many)).join("")}</div>` : `<p style="color:var(--dim);margin:0">Nothing was matched for this line.</p>`}</section>
+    </div></details>`;
+}
+
+function renderSide() {
+  if (!run) { $("#side").innerHTML = ""; return; }
+  const order = Object.keys(STATUS).filter((s) => run.counts[s]);
+  const leak = run.leak_check, blocked = !leak || !leak.passed;
+  const approved = run.quote_status === "approved" || run.quote_status === "sent";
+  const open = run.completeness === "partial";
+  const customer = run.terms.customer ? run.terms.customer.value : "not stated";
+  $("#side").innerHTML = `
+    <p class="label">This draft</p>
+    <dl class="meta"><dt>Quote</dt><dd>${esc(run.rfq_id)} r${run.revision}</dd><dt>Customer</dt><dd>${esc(customer)}</dd>
+      <dt>Source</dt><dd>${esc(run.source.filename || run.source.kind)}</dd><dt>State</dt><dd>${esc(run.quote_status.replace("_", " "))}, ${esc(run.completeness)}</dd></dl>
+    <div class="total" style="margin-top:16px">${money(run.total)}<small>single-option lines the buyer will see</small></div>
+    <div class="bar">${order.map((s) => `<i style="flex-grow:${run.counts[s]};background:${STATUS[s].color}"></i>`).join("")}</div>
+    <ul class="legend">${order.map((s) => `<li><span style="--c:${STATUS[s].color}">${STATUS[s].label}</span><b>${run.counts[s]}</b></li>`).join("")}</ul>
+    <div style="margin-top:18px">
+      ${approved ? `<div class="approved">Approved<small>${esc(run.approved_by || "")}</small></div>`
+        : `<button class="btn go big" id="approve" ${blocked ? "disabled" : ""}>${open ? "Approve as partial" : "Approve quote"}</button>
+           <p class="approve-note">${blocked ? "Blocked: the leak check found internal data in the buyer documents. " + esc((leak ? leak.hits : []).join("; "))
+             : open ? "Lines awaiting the buyer are listed as pending. Lines held for your review are left off entirely." : "Every line is answered."}</p>`}
+      <p class="approve-note" style="color:${blocked ? "var(--oxide)" : "var(--ok)"}">Leak check ${blocked ? "failed" : "passed"}: buyer documents carry no cost, margin, supplier or review notes.</p>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <a class="btn" href="/quote/${encodeURIComponent(run.rfq_id)}" target="_blank" rel="noopener">Buyer quote &#8599;</a>
+      <a class="btn" href="/api/rfq/${encodeURIComponent(run.rfq_id)}/trace" target="_blank" rel="noopener">Run trace &#8599;</a>
+    </div>
+    ${run.prism_trace_id ? `<p class="approve-note">Recorded in PRISM as <code style="font:11px var(--mono)">${esc(run.prism_trace_id)}</code></p>` : ""}`;
+  const btn = $("#approve");
+  if (btn) btn.onclick = approve;
+}
+
+function renderRun() {
+  const lines = [...run.lines].map((l, i) => ({l, i})).sort((a, b) =>
+    (STATUS[a.l.status] || STATUS.not_an_item).rank - (STATUS[b.l.status] || STATUS.not_an_item).rank || a.i - b.i);
+  const items = lines.filter((x) => x.l.status !== "not_an_item"), notes = lines.filter((x) => x.l.status === "not_an_item");
+  const t = run.terms, terms = [["Customer", t.customer], ["Due", t.due_date], ["Delivery", t.delivery]].filter(([, s]) => s)
+    .map(([k, s]) => `<div><b class="h" style="display:block">${k}</b>${esc(s.value)}</div>`)
+    .concat((t.requirements || []).map((s) => `<div><b class="h" style="display:block">Requirement, all lines</b>${esc(s.value)}</div>`))
+    .concat((t.commercial_requests || []).map((s) => `<div><b class="h" style="display:block">Commercial request, not acted on</b>${esc(s.value)}</div>`))
+    .concat((t.attachment_refs || []).map((s) => `<div><b class="h" style="display:block">Attachment referenced</b>${esc(s.value)}</div>`));
+  $("#main").innerHTML = `
+    <div class="head"><h1>Draft quote<span>${esc(run.rfq_id)} &middot; revision ${run.revision}</span></h1>
+      <div class="row"><button class="btn" id="openall">Expand all</button><button class="btn" id="closeall">Collapse all</button></div></div>
+    ${(run.withheld || []).length ? `<h2 class="sec">Withheld from the AI <small>${run.withheld.length} passage${run.withheld.length > 1 ? "s" : ""}</small></h2>
+      ${run.withheld.map((w) => `<div class="withheld"><code>${esc(w.text)}</code><small>${esc(w.reason)} Found by ${esc(w.detector)}. It was removed before any line was read and had no effect on the quote.</small></div>`).join("")}` : ""}
+    <h2 class="sec">Lines <small>${items.length} items, yours first</small></h2>
+    ${items.map((x, n) => lineRow(x.l, n)).join("")}
+    ${notes.length ? `<h2 class="sec">Notes and requirements in the request</h2>${notes.map((x, n) => lineRow(x.l, n)).join("")}` : ""}
+    ${terms.length ? `<h2 class="sec">Terms read from the request</h2><div class="terms">${terms.join("")}</div>` : ""}
+    <h2 class="sec">Email to the buyer <small>draft, not sent</small></h2>
+    <pre class="email" id="email">${esc(run.email || "")}</pre>
+    <div class="row"><button class="btn" id="copy">Copy email</button></div>`;
+  $("#openall").onclick = () => document.querySelectorAll(".line").forEach((d) => d.open = true);
+  $("#closeall").onclick = () => document.querySelectorAll(".line").forEach((d) => d.open = false);
+  $("#copy").onclick = async (e) => { await navigator.clipboard.writeText(run.email || ""); e.target.textContent = "Copied"; };
+  // Hovering a field lights up the words it was read from.
+  document.querySelectorAll(".line").forEach((box) => {
+    const src = $(".source", box);
+    if (!src) return;
+    box.querySelectorAll(".field").forEach((f) => {
+      const keys = (f.dataset.keys || "").split(" ").filter(Boolean);
+      f.onmouseenter = () => {
+        let any = false;
+        src.querySelectorAll("mark").forEach((m) => {
+          const hit = m.dataset.keys.split(" ").some((k) => keys.includes(k));
+          m.classList.toggle("hot", hit); any = any || hit;
+        });
+        src.classList.toggle("dimmed", any);
+      };
+      f.onmouseleave = () => { src.classList.remove("dimmed"); src.querySelectorAll("mark").forEach((m) => m.classList.remove("hot")); };
+    });
+    src.querySelectorAll("mark").forEach((m) => {
+      const keys = m.dataset.keys.split(" ");
+      m.onmouseenter = () => box.querySelectorAll(".field").forEach((f) =>
+        f.classList.toggle("hot", (f.dataset.keys || "").split(" ").some((k) => keys.includes(k))));
+      m.onmouseleave = () => box.querySelectorAll(".field").forEach((f) => f.classList.remove("hot"));
+    });
+  });
+  renderSide();
+}
+
+function working(what) {
+  clearInterval(timer);
+  const t0 = Date.now();
+  $("#main").innerHTML = `<div class="working"><h2>Drafting the quote</h2><p>${esc(what)} <span id="secs">0</span> s. A first read usually takes 10 to 30 seconds.</p>
+    <div class="track"><i></i></div><ul class="steps">${STEPS.map((s) => `<li>${s}</li>`).join("")}</ul></div>`;
+  timer = setInterval(() => { const el = $("#secs"); if (el) el.textContent = Math.round((Date.now() - t0) / 1000); }, 500);
+}
+
+function fail(message) {
+  clearInterval(timer);
+  $("#main").innerHTML = `<div class="error"><b>That did not work.</b> ${esc(message)}</div>` + (run ? "" : "");
+  if (run) { const keep = run; run = keep; }
+}
+
+async function call(path, options, what) {
+  if (what) working(what);
+  try {
+    const res = await fetch(path, options);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(typeof body.detail === "string" ? body.detail : `The server answered ${res.status}.`);
+    clearInterval(timer);
+    run = body; history.replaceState(null, "", "#" + run.rfq_id); renderRun();
+  } catch (e) { fail(e.message || String(e)); }
+}
+
+function sendFile(file) { const f = new FormData(); f.append("file", file); call("/api/rfq", {method: "POST", body: f}, `Reading ${file.name}.`); }
+function approve() { call(`/api/rfq/${encodeURIComponent(run.rfq_id)}/approve`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({by: "specialist"})}); }
+
+$("#send").onclick = () => {
+  const text = $("#paste").value.trim();
+  if (!text) { $("#paste").focus(); return; }
+  const f = new FormData(); f.append("text", text); call("/api/rfq", {method: "POST", body: f}, "Reading the pasted request.");
+};
+document.querySelectorAll("[data-sample]").forEach((b) => b.onclick = () =>
+  call(`/api/samples/${b.dataset.sample}`, {method: "POST"}, `Reading the sample ${b.dataset.sample === "pdf" ? "PDF" : "email thread"}.`));
+$("#file").onchange = (e) => e.target.files[0] && sendFile(e.target.files[0]);
+const drop = $("#drop");
+["dragenter", "dragover"].forEach((n) => drop.addEventListener(n, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((n) => drop.addEventListener(n, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => e.dataTransfer.files[0] && sendFile(e.dataTransfer.files[0]));
+
+// A link can reopen a draft (#Q-...) or run a sample straight away (#sample-email, #sample-pdf).
+const hash = decodeURIComponent(location.hash.slice(1));
+if (hash.startsWith("sample-")) call(`/api/samples/${hash.slice(7)}`, {method: "POST"}, "Reading the sample.");
+else if (hash.startsWith("Q-")) call(`/api/rfq/${encodeURIComponent(hash)}`, {}, "Reopening the draft.");
+</script>
+</body>
+</html>

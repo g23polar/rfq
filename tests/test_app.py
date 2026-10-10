@@ -57,4 +57,11 @@ def test_unknown_run_and_sample(client):
     assert client.get("/api/rfq/Q-NOPE").status_code == 404
     assert client.get("/quote/Q-NOPE").status_code == 404
     assert client.post("/api/samples/nope").status_code == 404
-    assert client.get("/").status_code == 200
+
+
+def test_review_screen_is_served_and_wired_to_the_api(client):
+    page = client.get("/")
+    assert page.status_code == 200 and "SPECIALIST REVIEW BENCH" in page.text
+    for path in ("/api/samples/", "/api/rfq", "/approve", "/quote/"):
+        assert path in page.text
+    assert "esc(" in page.text  # RFQ text is untrusted and is escaped before it is shown

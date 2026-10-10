@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | Done (M scope) |
 | **Depends on** | 01 (builds against `fixtures/sample_run.json`); live data needs 14 |
 | **Unblocks** | 18 |
 
@@ -41,6 +41,19 @@ Internal-only values (cost, margin, review notes) are visually marked so it is o
 
 - Edit a line's price, match or status with a required reason (UX-4).
 - Link to the PRISM run (UX-8).
+
+## As built
+
+- `src/rfq/static/index.html`, one file, no build step, served at `/`. Designed with the frontend-design skill as a dark "review bench" that pairs with the paper quote page: same typefaces and oxide accent, and hazard stripes mean internal-only.
+- Left rail: drop zone, paste box, sample buttons, the draft's summary (status bar and counts, the total the buyer will see), the approve button and the leak-check result, links to the buyer quote and the run trace.
+- Main: withheld passages first, then lines sorted so the specialist's come first, then notes, terms read from the request, and the buyer email with a copy button.
+- Each line expands to: why it is held (if it is), the buyer question, the buyer's text with every sourced value marked, the fields as read, the standardized spec (assumed fields dashed), buyer-facing issues, internal issues and verification, and each offer with match strength, availability, price, a benchmark range bar with our price and (striped) our cost, the rationale, an internal cost and margin box, and compliance results with their source text.
+- Hovering a field highlights the words it was read from, and hovering a marked word highlights the fields it produced.
+- All RFQ text is escaped before display; the request is untrusted input.
+- Links: `/#sample-email` and `/#sample-pdf` run a sample on load; `/#<rfq_id>` reopens a draft held by the running server.
+- Approve posts to the API; the button reads "Approve as partial" when lines are open and is disabled, with the reason, if the leak check failed.
+- It talks to the live API only; the static rendering of `fixtures/sample_run.json` (step 1 of the plan) was skipped because the API already existed.
+- Not built (stretch): editing a line. The PRISM trace id is shown when a run was recorded, without a dashboard link (URL format unknown).
 
 ## Out of scope
 

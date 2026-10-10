@@ -31,5 +31,6 @@ def test_gauge_examples_match_the_reference_table():
 
 def test_bundled_files_the_readme_points_to_exist():
     root = Path(__file__).parent.parent
-    for path in ("docs/quote-sample.png", "fixtures/rfq_email.txt", "fixtures/golden.jsonl", "spec.md"):
+    for path in ("docs/quote-sample.png", "docs/review-screen.png", "fixtures/rfq_email.txt",
+                 "fixtures/golden.jsonl", "spec.md"):
         assert f"({path})" in README and (root / path).exists(), path
