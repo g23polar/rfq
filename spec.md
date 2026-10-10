@@ -2,351 +2,547 @@
 
 | | |
 |---|---|
-| **Status** | Draft v2, revised after product review (pre-technical); changes listed in Section 15 |
+| **Version** | 2.0 — draft for review (pre-technical) |
 | **Event** | Get Hired Hack @ Columbia Startup Lab, Oct 10, 2026 |
 | **Track** | RudCo: RFQ to Quote |
 | **Submission deadline** | 4:30 PM EDT, Oct 10 (target: submitted by 4:15) |
 | **Working name** | RFQ-to-Quote Agent (placeholder) |
+| **Priority key** | **M** = hackathon MVP (must ship today) · **S** = stretch (today, if time) · **L** = later (product roadmap, shown in pitch only) |
 
----
+### What changed from v1, and why
 
-## 1. Product description
-
-Industrial buyers send requests for quotes (RFQs) as messy emails, PDFs and spreadsheets. The same item gets written many different ways, and every line needs to be decoded into a precise specification, matched to stock, priced competitively and checked for compliance requirements. Today a person does this by hand, line by line.
-
-The RFQ-to-Quote Agent takes a messy RFQ and turns it into a ready-to-send quote. For every line it shows what it understood, where in the original document that came from, which catalog item it matched, how the price was calculated and how it compares to the market, and which compliance requirements are or are not met.
-
-When the agent isn't sure, it says so. Lines that are ambiguous, conflicting or incomplete are not guessed. They are held back and turned into a clear question for the buyer.
-
-**One-line description:** An RFQ agent that quotes what it can prove and asks about what it can't.
-
----
-
-## 2. The problem
-
-- **Inconsistent descriptions.** "304 SS sheet 16ga 4x8" and "Stainless 304, 0.060 in, 48 x 96" describe the same item. A quoting specialist has to recognize that every time.
-- **Hidden requirements.** Certification, country-of-origin and mill test report requirements are often buried in an email header or a footnote, not on the line itself.
-- **Pricing judgment.** Each price needs to be competitive against the market without going below cost, and today the reasoning lives in someone's head.
-- **Costly guesses.** A wrong assumption (feet vs. inches, 304 vs. 304L, a missing quantity) produces a wrong quote, lost margin or a rejected shipment.
-- **Untrustworthy automation.** A tool that confidently fills in blanks is worse than no tool, because errors become invisible.
-
----
-
-## 3. Users
-
-| User | Role | What they need |
+| v1 assumption | v2 position | Why |
 |---|---|---|
-| **Quoting specialist** (primary) | Works at a metals supplier or distributor such as RudCo; turns RFQs into quotes | Speed on routine lines, a clear view of what needs their judgment, and confidence that nothing was silently guessed |
-| **Buyer** (recipient) | Purchasing agent at an industrial customer | An accurate quote, clearly stated assumptions, and short, specific questions on anything unclear |
-| **Sales manager** (secondary) | Oversees quoting quality | Evidence that prices are competitive and margins are protected |
-
-The primary user should be able to use the product without a walkthrough.
+| Ambiguous line → hold it and ask the buyer | Quote everything that can be quoted; for ambiguous lines, **price labeled alternates and ask in parallel**. Hold a line only when no reasonable option exists | In distribution, the first credible quote usually wins. A tool that stalls on every ambiguity loses the deal. Alternates are not guesses: they are explicit, priced options |
+| Agent output = finished quote | Agent output = **draft quote that a quoting specialist reviews, edits and approves** | This is how RFQ automation is built and bought in the industry; autonomy is a dial, not a default |
+| One kind of "needs attention" | Two kinds: **needs buyer input** (external) vs. **needs specialist review** (internal, e.g. margin below floor, weak match) | Internal problems must never turn into buyer emails, and vice versa |
+| Price = weight × benchmark $/lb | Price reflects how metals are actually quoted: **base + extras/processing + alloy surcharge (stainless)**, in the buyer's unit of measure, with minimum charges and a short validity window | Matches real metals pricing; judges from the industry will look for it |
+| No availability | **Stock check and lead time** per line | Core to every real quote |
+| AI's self-reported confidence | Confidence comes from **verifiable signals** (source evidence found, rules satisfied, two independent matching methods agreeing) | Model self-confidence is not reliable; agreement between independent checks is |
+| Catalog matching only | Matching also uses **customer part-number cross-references** that are learned from confirmed answers | Cross-referencing customer part numbers is the single biggest manual time sink distributors report |
+| Edge cases implicit | **Explicit edge-case catalogue** (Section 12) with expected behavior | Overlooked cases are where trust is lost |
 
 ---
 
-## 4. Goals and non-goals
+## 1. Summary
+
+Industrial buyers send requests for quotes (RFQs) as messy emails, PDFs and spreadsheets. Every line has to be decoded into a precise specification, matched to stock, priced, and checked for compliance. Today a person does this by hand, line by line, while a competitor races to answer the same RFQ.
+
+The RFQ-to-Quote Agent turns a messy RFQ into a **reviewable draft quote in under a minute**. Every value on it is traceable to its source. Every price is explained against a market benchmark. Every compliance requirement is marked met, not met, or unknown. Where the RFQ is ambiguous, the agent offers priced alternates and drafts a specific question, instead of guessing. A quoting specialist reviews, adjusts and approves, then sends.
+
+**One-line description:** An RFQ agent that drafts the quote in a minute, shows its work on every line, and never hides a guess.
+
+---
+
+## 2. Background: how RFQ quoting works today
+
+- **Speed decides most RFQs.** Distributors report that the first credible quote usually wins, even at a slightly higher price, and the first hour after an RFQ arrives is the best window.
+- **Manual flow:** read the RFQ → decide what to quote → translate each line into the supplier's own items (often cross-referencing the customer's part numbers) → look up price, stock and history → assemble and send the quote.
+- **Industry-standard automation** parses the RFQ as-is, resolves each line to a sellable item (with alternatives when the exact item isn't available), prices by the supplier's own rules, and hands a rep a **draft to review, adjust, approve and send**. Buyers of this software judge it on matching accuracy *and* honesty about uncertainty: stated confidence per line, weak matches surfaced, uncertain lines routed to a person.
+- **Metals pricing specifics:** stainless steel is typically priced as a **base price, plus extras** (non-standard thickness, finish, packaging), **plus an alloy surcharge** that tracks nickel, chrome and molybdenum costs, published monthly per grade and often applied at time of shipment. Market prices are commonly expressed per hundredweight (cwt). Because metal prices move, quotes carry short validity windows.
+
+---
+
+## 3. Problem statement
+
+1. **Inconsistent descriptions.** "304 SS sheet 16ga 4x8" and "Stainless 304, 0.060 in, 48 x 96" describe the same item; the specialist must recognize that every time.
+2. **Hidden requirements.** Certification, country-of-melt and mill test report requirements are buried in headers, footers and email threads.
+3. **Pricing judgment lives in someone's head.** Competitive vs. below cost, which surcharge applies, what this customer paid last time.
+4. **Ambiguity is expensive in both directions.** A wrong guess (feet vs. inches, 304 vs. 304L) creates a bad quote; a slow round of questions loses the deal.
+5. **Untrustworthy automation is worse than none.** A tool that confidently fills blanks makes errors invisible.
+
+---
+
+## 4. Users and jobs to be done
+
+| User | Job to be done | What success looks like |
+|---|---|---|
+| **Quoting specialist** (primary) | "When an RFQ lands, help me get an accurate quote out before competitors, and show me exactly which lines need my judgment." | Clean lines need no edits; risky lines are obvious; approving a quote takes minutes |
+| **Buyer** (recipient) | "Give me a complete, accurate quote fast, with clear assumptions and as few back-and-forth questions as possible." | Every line answered (priced, alternates, or no-bid with reason); short, specific questions |
+| **Sales manager** (secondary) | "Make sure we're competitive without giving away margin, and that we never ship non-compliant material." | Margin floors enforced; compliance gaps visible; full audit trail |
+
+The quoting specialist must be able to use the product without a walkthrough.
+
+---
+
+## 5. Goals and non-goals
 
 ### Goals
-1. Turn a messy RFQ in any of the three common formats into a structured, priced quote.
-2. Make every value on the quote traceable to its source (the RFQ text, the catalog or the price benchmark).
-3. Never guess on an ambiguous line; route it to the buyer with a specific question.
-4. Explain every price in plain language against a market benchmark.
-5. Catch compliance requirements and show whether each one is met.
-6. Resist manipulated input (text in an RFQ trying to instruct the AI).
-7. Demonstrate measured accuracy on a labeled test set.
+1. Turn a messy RFQ (email, PDF or spreadsheet) into a reviewable draft quote in under a minute.
+2. Answer **every** line: priced, priced with alternates, needs input, or no-bid with a reason.
+3. Make every value traceable to its source: RFQ text, catalog, cross-reference, benchmark or rule.
+4. Never hide a guess; minimize unnecessary questions.
+5. Explain every price against a market benchmark in plain language.
+6. Catch compliance requirements and show whether each is met.
+7. Keep a human in control of what is sent.
+8. Resist manipulated input and never leak internal data (cost, margin) to the buyer.
+9. Demonstrate measured accuracy on a labeled test set.
 
-### Non-goals (for this event)
-- Sending emails or quotes directly to buyers (we produce them; a human sends them).
-- Real supplier inventory, real live market pricing or integration with an ERP system.
-- Handwritten or scanned image-only documents.
-- Negotiation, order entry or invoicing after the quote.
-- Materials beyond common metals (stainless, carbon steel, aluminum) and forms beyond sheet, plate, bar and tube.
-
----
-
-## 5. Guiding principles
-
-1. **Quote what you can prove, ask about what you can't.** No line is quoted on a guess. The only inferences allowed on a quoted line are the named ones in Section 7.1; anything else is a question.
-2. **Show your work.** Every value can be clicked back to where it came from.
-3. **The AI reads language; rules make decisions.** AI is used to interpret messy text and to word questions. Decisions with a right answer (unit conversions, matching, pricing math, status) follow fixed, explainable rules. This is also the main defense against manipulated input: text in an RFQ cannot change a price or a status, because the AI never sets either.
-4. **Assumptions are visible, never hidden.** If the agent assumes something minor, the quote says so on that line.
-5. **"Unknown" is never shown as "OK."** A requirement that can't be confirmed is shown as unconfirmed.
-6. **Honest data.** Demo catalog and price benchmarks are synthetic and labeled as such.
-7. **Two audiences, two views.** The specialist sees cost, margin and the full reasoning. The buyer document shows price, spec, assumptions and compliance, and never cost or margin.
+### Non-goals (hackathon)
+- Automatically sending emails or quotes to buyers.
+- Live ERP, live inventory or live market price integration (synthetic data, clearly labeled).
+- Handwritten or image-only scans; CAD/drawing interpretation.
+- Order entry, invoicing, negotiation.
+- Products beyond common metals (stainless, carbon steel, aluminum) in sheet, plate, bar, tube and pipe.
 
 ---
 
-## 6. The flow
+## 6. Product principles
 
-The agent processes an RFQ in ten stages. Each line item carries a running list of **issues** (missing information, conflicts, assumptions) that grows as it moves through the stages. The final status of each line is decided from that list.
-
-| # | Stage | Purpose | Takes in | Produces | Boundary (what it does NOT do) |
-|---|---|---|---|---|---|
-| 0 | **Intake** | Read the RFQ and split it into header terms and individual line items | An email, PDF or spreadsheet | The RFQ's general terms (due date, delivery, blanket requirements) and a list of raw line items, each with a pointer to where it appears in the original | Does not interpret any line |
-| 1 | **Safety screen** | Detect text that tries to instruct or manipulate the AI | All RFQ text | A clean / flagged / blocked verdict and the offending passages | Flagged passages are removed and set aside for review; the rest of the RFQ continues |
-| 2 | **Read the line** | Interpret each line into specification fields (material, grade, form, dimensions, quantity, standard, certifications) | One raw line plus relevant header terms | Each field with its value and the exact source text it came from; fields not stated are left blank | Does not fill in anything the text doesn't say. Any field whose cited source text isn't actually in the document is discarded and logged |
-| 3 | **Standardize** | Convert the reading into one standard form so different wordings of the same item become identical | The interpreted fields | A standardized specification and an item "fingerprint"; any assumptions or conflicts are added as issues | Applies fixed conversion rules only (units, gauges, abbreviations); every inference is recorded as an assumption |
-| 4 | **Match to catalog** | Find the supplier catalog item that fulfills the line | The standardized spec, plus the line's compliance requirements as constraints | Best match, its match strength, up to two runner-ups, and differences from the request | Does not accept a weak or tied match; substitutions are proposed, never assumed; an item that meets the line's requirements is preferred over a closer one that doesn't |
-| 5 | **Price** | Calculate a competitive price and explain it | The spec, the matched item and market benchmarks | Unit and extended price, how it compares to the benchmark range, margin, and a plain-language explanation | Never prices below cost; flags prices above the benchmark range or based on stale benchmarks |
-| 6 | **Compliance check** | Report, with evidence, whether the matched item meets each requirement read in stage 2 | Header and line requirements, plus the matched item's attributes | Each requirement marked met / not met / unknown, with evidence | Does not treat "unknown" as met |
-| 7 | **Decide and ask** | Assign each line a status and, where needed, draft a question for the buyer | All issues collected for the line | A line status (see Section 7) and, for unclear lines, a specific question with options | The AI only words the question; it does not choose the status |
-| 8 | **Verify** | Run fixed checks before anything goes out: every shown value has a verified source or a named assumption, every number in a price explanation equals the calculated number, and no price is below the floor | The completed lines | Pass or fail per line; a failed line is not quoted and gets the specialist review flag (Section 7.3) | Does not use AI to judge its own work |
-| 9 | **Assemble** | Produce the deliverables | All verified lines | A ready-to-send quote and a buyer email listing all open questions | Produces documents for a human to send; does not send them |
-
-Every stage is recorded in Block Convey's PRISM so the full run for any RFQ can be inspected step by step.
+1. **Answer every line, hide no guess.** Each line ends with a clear status. Inferences are visible.
+2. **Options before questions.** When a reasonable set of options exists, price them as labeled alternates and ask the buyer to pick. Hold a line only when no reasonable option exists.
+3. **Ask only what blocks the quote, and ask it once.** Questions are grouped, specific, and offer options.
+4. **The AI reads and writes language; rules make decisions.** Interpreting messy text and wording questions are AI tasks. Unit conversion, matching thresholds, pricing math, compliance verdicts and line status follow fixed, documented rules.
+5. **Confidence is earned, not self-reported.** A line is "confident" when its source evidence is found, rules are satisfied, and independent checks agree.
+6. **Internal stays internal.** Cost, margin, supplier names and internal notes never reach buyer-facing output.
+7. **Unknown is never shown as OK.**
+8. **Human approves what is sent.** Autonomy is a setting the business can widen later.
+9. **Honest data.** Synthetic catalog and benchmarks are labeled as such everywhere.
 
 ---
 
-## 7. Line statuses
+## 7. Approach and alternatives considered
 
-| Status | Meaning | When it is used | What the quote shows |
-|---|---|---|---|
-| ✅ **Quoted** | Fully understood, matched and priced | No issues on the line | Price and spec |
-| ⚠️ **Quoted with assumptions** | Quoted, but relies on a minor stated assumption | Only assumptions on the allowed list in Section 7.1 | Price, spec and each assumption in plain language |
-| ❓ **Needs clarification** | Not quoted until the buyer answers | Missing required information, conflicting information, a proposed substitution, two equally good catalog matches, or a compliance requirement that cannot be confirmed either way | A specific question to the buyer, with options where possible |
-| ⛔ **No bid** | Cannot be supplied as requested | No catalog item fits, or no catalog item can meet a stated compliance requirement | The reason |
-
-### 7.1 Allowed assumptions
-
-This is the complete list. An inference that is not on it makes the line "Needs clarification".
-
-| Assumption | Example | Why it is low-risk |
+| Option | Description | Verdict |
 |---|---|---|
-| A sheet or plate size written as two bare numbers, both 12 or less, is in feet | "4x8" → 48 x 96 in | These are the standard stock sizes; a 4 in x 8 in piece would be written with units |
-| A stated thickness within normal tolerance of a standard gauge or stock thickness means that standard thickness | 0.060 in stainless → 16 ga (0.0625 in) | Buyers round thickness; the tolerance value is set in the technical plan |
-| No standard stated: the default standard for that grade and form applies | 304 sheet → ASTM A240 | Taken from the reference table, not from the AI |
-| Dual-certified stock fills a request for either grade | 304 requested → 304/304L supplied | The material is certified to both grades |
+| A. Single AI prompt | Send the RFQ to a model, ask for a quote | **Rejected.** Unverifiable, hallucinates specs and prices, and is the "thin wrapper" the event excludes |
+| B. Rules only | Pattern-matching parsers and lookup tables | **Partially used.** Reliable for unit conversion, spreadsheets and pricing math; too brittle for free-text emails |
+| C. Extract → standardize → match | AI reads the line into fields; rules standardize; catalog lookup finds the item | **Used** as the primary path |
+| D. Catalog-constrained selection | Retrieve likely catalog items first, then have the AI choose among that closed list (or "none of these") | **Used** as an independent second path |
+| E. Multi-agent system | Several autonomous agents negotiating the quote | **Rejected for now.** Harder to inspect and explain; no accuracy benefit at this scale |
 
-Both example strings from the track rely on one of these, so they come out as "Quoted with assumptions", not "Quoted". That is intended.
+**Chosen approach:** a hybrid (B + C + D). Paths C and D resolve each line independently. **When they agree, the match is confident; when they disagree, the line goes to review.** This turns "confidence" into something the product can show and prove.
 
-### 7.2 Status rules
-
-Applied in this order; the first rule that fits decides the status.
-
-1. Any missing required field, conflict, unlisted inference, tied or weak match, proposed substitution, or unconfirmable requirement → **Needs clarification**.
-2. No catalog item fits, or none meets a stated requirement → **No bid**.
-3. The line relies on one or more allowed assumptions → **Quoted with assumptions**.
-4. Otherwise → **Quoted**.
-
-### 7.3 Specialist review flag
-
-Some problems are for the specialist, not the buyer. A line gets a review flag, separate from its status, when its price is above the benchmark range, its benchmark is out of date, it fails verification (stage 8), or text was withheld from it by the safety screen. A flagged line stays off the buyer document until the specialist clears it.
+**Where the "agent" is:** the agent decides, per line, which checks and lookups to run. It retries with relaxed criteria when a strict match fails (to find alternates). It decides whether a line needs the buyer, the specialist, or neither. It processes buyer replies to re-quote affected lines (stretch).
 
 ---
 
-## 8. Product requirements
+## 8. The flow
 
-Priority: **Must** = required for submission; **Should** = strongly improves judging score; **Could** = if time allows.
+Each line item carries a running list of **issues** (missing, conflict, assumption, risk). Each issue is tagged **buyer-facing** or **internal**. Line status is decided from that list by fixed rules. Every stage is recorded in Block Convey's PRISM, so the full run for any RFQ can be inspected.
 
-### 8.1 Intake
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| IN-1 | Accept an RFQ pasted or uploaded as email text | Must | Email fixture produces correct line count |
-| IN-2 | Accept an RFQ as a PDF | Must | PDF fixture produces correct line count |
-| IN-3 | Accept an RFQ as a spreadsheet | Should | Spreadsheet fixture produces correct line count |
-| IN-4 | Separate RFQ-wide terms (due date, delivery, blanket certification requirements) from line items | Must | Blanket requirements apply to every line |
-| IN-5 | Keep a reference from every line back to its location in the original document | Must | Each line shows its source location |
-
-### 8.2 Safety
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| SF-1 | Screen all incoming RFQ text for attempts to instruct or manipulate the AI, using a PRISM guardrail | Must | Seeded injection in the PDF fixture is caught |
-| SF-2 | Remove flagged passages from processing and show them to the user as withheld | Must | Injected instruction has no effect on any price or status |
-| SF-3 | Continue processing the rest of a flagged RFQ | Should | Clean lines in the same RFQ are still quoted |
-| SF-4 | Treat buyer commercial requests ("best price", "can you do 10% off") as terms shown to the specialist, neither as manipulation nor as instructions | Should | Discount-request fixture changes no price and is not withheld |
-
-### 8.3 Reading and standardizing
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| RD-1 | Interpret each line into material, grade, form, dimensions, quantity, unit, standard and certification requirements | Must | Golden-set field accuracy reported |
-| RD-2 | For every interpreted value, record the exact source text it came from | Must | Every displayed field can show its source text |
-| RD-3 | Discard any value whose cited source text does not appear in the RFQ, and log it | Must | Demonstrable in the run record |
-| RD-4 | Leave fields blank when the RFQ doesn't state them. The AI never fills a field from its own knowledge; the only source of unstated values is the reference tables, applied as allowed assumptions (Section 7.1) | Must | Missing-grade fixture line shows grade as missing |
-| RD-5 | Convert all dimensions to one unit system, including fractions and gauge numbers (gauge interpreted by material) | Must | Both example strings from the track produce the same fingerprint, each shown as quoted with assumptions |
-| RD-6 | Expand common abbreviations and alternate names (e.g. "SS" → stainless) | Must | — |
-| RD-7 | Record any inference (e.g. "4x8" read as feet, default standard from grade) as a visible assumption | Must | Assumption appears on the quote line |
-| RD-8 | Detect conflicts within a line (e.g. stated thickness disagrees with stated gauge) | Must | Conflict fixture line becomes "Needs clarification" |
-| RD-9 | Detect duplicate lines written differently within one RFQ. Both are still quoted separately and each notes the other; quantities are never merged | Should | Duplicate fixture lines are linked |
-
-### 8.4 Catalog matching
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| MT-1 | Match each standardized line to a supplier catalog item | Must | Golden-set match accuracy reported |
-| MT-2 | Show match strength, the best match and up to two alternatives | Must | Visible in line detail |
-| MT-3 | Treat weak or tied matches as "Needs clarification" | Must | — |
-| MT-4 | Propose substitutions (a different grade or standard, e.g. 316 for 304) only as a question to the buyer. Dual-certified stock that meets the requested grade is not a substitution; it is an allowed assumption (Section 7.1) | Should | Substitution fixture line produces a question |
-| MT-5 | Mark lines with no viable match as "No bid" with a reason | Must | Not-in-catalog fixture line is "No bid" |
-| MT-6 | Load the reference tables into the PRISM Knowledge Base and ground at least one stated claim against it (e.g. a gauge conversion or a default standard). Matching itself stays a fixed lookup against the catalog | Must | The grounded claim and its Knowledge Base source are visible in PRISM |
-
-### 8.5 Pricing
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| PR-1 | Price each matched line from its weight, cost and a market benchmark | Must | Price shown per unit and extended |
-| PR-2 | Never price below cost plus a minimum margin | Must | Below-cost scenario is blocked |
-| PR-3 | Show the benchmark range, where the price sits in it, the margin, and the benchmark's source and date. Cost and margin are specialist-only and never appear on the buyer document | Must | Visible in line detail; absent from the quote document |
-| PR-4 | Provide a plain-language explanation of why the price is competitive, built from the calculated numbers | Must | Every number in the explanation matches the calculation |
-| PR-5 | Flag prices above the benchmark range or based on outdated benchmarks | Should | Line carries the specialist review flag (Section 7.3) |
-| PR-6 | Label demo benchmarks as synthetic | Must | Label visible in UI and quote |
-| PR-7 | Use one documented pricing rule: where in the benchmark range we aim, the minimum margin, and what happens when the floor is above the range | Must | Rule listed in README; every price reproduces from it |
-
-### 8.6 Compliance
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| CP-1 | Detect mill test report requirements | Must | — |
-| CP-2 | Detect country-of-origin / domestic-sourcing requirements | Must | "Domestic only" fixture is detected |
-| CP-3 | Detect specification certification requirements (e.g. ASTM) | Must | — |
-| CP-4 | Check each requirement against the matched item and mark it met / not met / unknown | Must | Non-compliant item is flagged on the DFARS fixture |
-| CP-5 | Apply RFQ-wide requirements to every line | Must | — |
-
-### 8.7 Decisions and buyer questions
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| DC-1 | Assign every line exactly one of the four statuses using fixed, documented rules | Must | Status rules listed in README |
-| DC-2 | For every "Needs clarification" line, draft a specific question, with options where possible | Must | Every ❓ line has a question |
-| DC-3 | Combine all questions into one buyer email | Must | Email produced alongside the quote |
-| DC-4 | Allow the specialist to answer a question or correct a field and re-quote that line | Should | Answering the question on a ❓ fixture line turns it into a quoted line |
-
-### 8.8 Verification
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| VR-1 | Re-check that every number in each price explanation matches the calculation | Must | — |
-| VR-2 | Attach a PRISM Evaluator to at least one output (line status or price claim) | Must | Evaluator result visible in PRISM |
-| VR-3 | Send borderline results to PRISM's review queue | Should | At least one item in the queue during demo |
-| VR-4 | Record every stage of every RFQ as one run in PRISM, under a consistent agent name | Must | Full run visible in PRISM |
-
-### 8.9 Output and experience
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| UX-1 | Show all lines in one quote table with clear status badges | Must | — |
-| UX-2 | Let the user expand any line to see: original text, interpreted spec, matched item and alternatives, price math, compliance results and issues | Must | — |
-| UX-3 | Show summary counts by status at the top | Should | — |
-| UX-4 | Produce a ready-to-send quote document (header, priced lines, assumptions, compliance notes, validity, pending lines; no cost or margin) | Must | — |
-| UX-5 | Export the quote as a printable document | Should | — |
-| UX-6 | Link each RFQ to its PRISM run | Should | — |
-| UX-7 | Usable by a quoting specialist without a walkthrough | Must | Judged in demo |
-
-### 8.10 Quality measurement
-| ID | Requirement | Priority | Acceptance |
-|---|---|---|---|
-| QA-1 | Maintain a labeled test set of ~20 RFQ lines with expected specs and statuses | Must | — |
-| QA-2 | Report results on that set as expected vs. actual status, stating the set size, with the two error types separated: wrongly quoted (dangerous) and wrongly asked (annoying) | Must | Table and headline numbers shown in demo and Devpost |
-| QA-3 | Let a judge type their own line and see it processed live | Should | Works in demo |
+| # | Stage | Purpose | Takes in | Produces | Boundary |
+|---|---|---|---|---|---|
+| 0 | **Triage** | Decide what this message is | Incoming email/file | Type (new RFQ / revision / not an RFQ), customer, due date, requested response format | Non-RFQs are labeled and not quoted |
+| 1 | **Intake & segmentation** | Split the RFQ into its parts | The RFQ and attachments | RFQ-wide terms, line items (with the buyer's line numbers and a pointer to the source location), notes, attachment references | Strips forwarded history, signatures and disclaimers; interprets nothing |
+| 2 | **Safety screen** | Detect text trying to manipulate the AI | All RFQ text | Clean / flagged / blocked, with offending passages | Flagged passages are withheld from processing and shown to the specialist; the rest continues |
+| 3 | **Interpret** (AI) | Read each line into specification fields | One line plus relevant RFQ terms | Material, grade, form, dimensions, quantity, unit, standard, finish/temper, tolerances, certifications, each with the exact source text | Leaves unstated fields blank. Any field whose cited source text isn't actually in the RFQ is discarded and logged |
+| 4 | **Standardize & validate** (rules) | One standard form so different wordings become identical | Interpreted fields | Standardized spec, item fingerprint, issues (missing, conflict, assumption) | Fixed conversion rules only; every inference logged as an assumption |
+| 5 | **Resolve to catalog** | Find the item(s) that fulfill the line | Standardized spec, customer cross-references, catalog | Best match, alternates, match strength, whether both matching paths agreed | Weak, tied or disagreeing matches are never silently accepted; substitutions are always offered, never assumed |
+| 6 | **Availability** | Can we ship it, and when | Matched item(s), quantity | In stock / partial / not stocked, plus lead time | Never promises a date the data doesn't support |
+| 7 | **Price** (rules) | Competitive, explainable price | Spec, matched item, benchmarks, pricing rules | Price in the buyer's unit, components (base, processing, surcharge), minimum charges, benchmark comparison, margin, plain-language rationale, validity | Never below the margin floor without specialist approval; flags prices outside the benchmark range or based on stale benchmarks |
+| 8 | **Compliance** | Required certifications and documents | RFQ-wide and line requirements, matched item attributes | Each requirement: met / not met / unknown, with evidence | "Unknown" is never shown as met |
+| 9 | **Decide** | Assign status; draft questions | All issues on the line | Line status (Section 9); buyer question with options (AI words it); internal review note | AI words questions only; status comes from rules |
+| 10 | **Verify** | Check the draft before a human sees it | Completed lines and draft documents | Per-line verification; leak check on buyer-facing output; borderline items sent to review queue | — |
+| 11 | **Specialist review** (human) | Approve what goes out | Draft quote | Approved quote; edits and overrides recorded with reasons | Nothing is "ready to send" without approval |
+| 12 | **Assemble** | Produce deliverables | Approved lines | Buyer-facing quote, buyer email with grouped questions, internal summary | Buyer-facing documents contain no internal data |
+| 13 | **Buyer reply loop** (stretch) | Close the loop | Buyer's reply | Affected lines re-run; new quote revision | Unclear answers produce a follow-up question, not a guess |
+| 14 | **Learn** (later) | Corrections stick | Specialist edits, buyer answers | New customer cross-references and aliases | Only confirmed answers are learned |
 
 ---
 
-## 9. Event and platform requirements
+## 9. Statuses
+
+### Line status
+
+| Status | Meaning | Audience | What the quote shows |
+|---|---|---|---|
+| ✅ **Quoted** | Confident match, priced, no open issues | — | Price, spec, availability |
+| ⚠️ **Quoted with assumptions** | Priced; relies on low-risk stated assumptions | Buyer sees assumptions | Price plus each assumption in plain language |
+| 🔀 **Quoted with alternates** | Ambiguous, but a small set of reasonable options exists; each option priced | Buyer picks | Each alternate priced and labeled, plus one question |
+| ❓ **Needs buyer input** | Can't be priced until the buyer answers; no reasonable options exist | Buyer | The question; no price |
+| 👤 **Needs specialist review** | Internal concern: margin below floor, matching paths disagree, guardrail flag, unverifiable compliance on a critical requirement | Internal only | Held from the buyer quote until resolved |
+| ⛔ **No bid** | Can't be supplied as requested | Buyer | The reason (and a suggested alternative if one exists) |
+| ℹ️ **Not an item** | A note, requirement or service line (freight, cutting, certs) | — | Applied as a term or charge |
+
+### Quote status
+**Draft → In review → Approved → Sent (by a human) → Revised (after buyer reply).** An approved quote may be **complete** or **partial** (some lines awaiting buyer input). Partial quotes go out by default, because speed matters; the specialist can choose to hold.
+
+---
+
+## 10. Functional requirements
+
+### 10.1 Triage and intake
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| IN-1 | Accept RFQs as email text, PDF and spreadsheet | M (email, PDF), S (spreadsheet) | Each fixture yields the correct line count |
+| IN-2 | Classify messages as new RFQ, revision, or not an RFQ | S | Non-RFQ fixture is not quoted |
+| IN-3 | Ignore forwarded/quoted email history, signatures and disclaimers | M | Thread fixture yields only the newest request's lines |
+| IN-4 | Separate RFQ-wide terms, line items, notes and attachment references | M | Header requirement applies to all lines |
+| IN-5 | Preserve the buyer's line numbers and a pointer to each line's source location | M | Quote lines use buyer numbering |
+| IN-6 | Detect references to missing attachments ("per drawing 1234") | M | Line asks the buyer for the drawing |
+| IN-7 | Join descriptions that wrap across lines or pages; split one line that requests multiple items | S | — |
+
+### 10.2 Safety and confidentiality
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| SF-1 | Screen all incoming text for manipulation attempts using a PRISM guardrail | M | Seeded injection is caught |
+| SF-2 | Withhold flagged passages; show them to the specialist | M | Injection has no effect on any price or status |
+| SF-3 | Keep processing the rest of a flagged RFQ | M | Clean lines still quoted |
+| SF-4 | Block internal data (cost, margin, supplier/mill names, internal notes) from all buyer-facing output | M | Leak check passes on every generated quote and email |
+| SF-5 | Buyer questions contain no commitments not backed by the quote | M | — |
+
+### 10.3 Interpret and standardize
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| RD-1 | Interpret each line into material, grade, form, dimensions, quantity, unit, standard, finish/temper, tolerances, certifications | M | Field accuracy reported on test set |
+| RD-2 | Record the exact source text for every interpreted value | M | Every field can show its source |
+| RD-3 | Discard values whose cited source text isn't in the RFQ, and log it | M | Visible in run record |
+| RD-4 | Leave unstated fields blank; never fill from general knowledge | M | Missing-grade line shows grade missing |
+| RD-5 | Standardize units, fractions, gauges (by material), abbreviations, metric/imperial | M | Track's two example strings produce the same fingerprint |
+| RD-6 | Log every inference as a visible assumption | M | Assumptions appear on the quote |
+| RD-7 | Detect internal conflicts (e.g. thickness vs. gauge) | M | Conflict fixture routes correctly |
+| RD-8 | Link duplicate lines written differently | S | Duplicate fixture linked |
+| RD-9 | Handle "same as above" lines by inheriting from the previous line, logged | S | — |
+
+### 10.4 Resolve to catalog
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| MT-1 | Match each line to catalog items with a match strength, best match and alternates | M | Match accuracy reported |
+| MT-2 | Run two independent matching paths; agreement = confident, disagreement = specialist review | S | Disagreement fixture goes to review |
+| MT-3 | Resolve customer part numbers via a cross-reference table | M (lookup), L (learning) | Known part number resolves with "cross-reference" shown as source |
+| MT-4 | Offer substitutions (dual-certified grades, near sizes, cut from larger stock) only as labeled alternates | M | — |
+| MT-5 | No viable match → no bid with reason | M | Not-in-catalog fixture is no-bid |
+| MT-6 | Ground matching claims in reference data loaded into the PRISM Knowledge Base | M | Claims checkable against the Knowledge Base |
+
+### 10.5 Availability
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| AV-1 | Show in stock / partial / not stocked per line | M | Shortage fixture shows partial |
+| AV-2 | Show lead time for non-stock or shortfall quantity | S | — |
+| AV-3 | Flag when the requested delivery date can't be met | S | — |
+
+### 10.6 Pricing
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| PR-1 | Compute price from weight/size, cost and pricing rules, in the buyer's unit of measure (each, per lb, per cwt, per foot) | M | Price shown in buyer's unit plus extended total |
+| PR-2 | Enforce a margin floor; below-floor lines go to specialist review | M | Below-floor fixture goes to review |
+| PR-3 | Compare each price to a benchmark range and show position, source and date | M | Visible per line |
+| PR-4 | Plain-language price rationale built from the calculated numbers | M | Every number matches the calculation |
+| PR-5 | Show stainless alloy surcharge as a separate, month-specific component | S | Surcharge line on stainless items |
+| PR-6 | Apply processing charges (cutting) and minimum order charges, shown separately | S | — |
+| PR-7 | Price buyer-requested quantity breaks | S | — |
+| PR-8 | Show quote validity period (short, because of metal price volatility) | M | Validity date on quote |
+| PR-9 | Show the customer's previous price for the same item when available | L | — |
+| PR-10 | Flag prices above benchmark range or based on stale benchmarks | S | — |
+
+### 10.7 Compliance
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| CP-1 | Detect mill test report requirements (including "3.1 certs") | M | — |
+| CP-2 | Detect domestic-sourcing requirements, and distinguish country of **melt** (e.g. DFARS specialty metals) from country of manufacture; ambiguous "domestic" → question | M | DFARS fixture flags a non-compliant item |
+| CP-3 | Detect specification certification requirements (ASTM, ASME pressure-vessel grades, dual certification) | M | — |
+| CP-4 | Detect industry-specific requirements (e.g. sour-service, positive material identification, RoHS/REACH) and mark unknown if data can't confirm | S | — |
+| CP-5 | Apply RFQ-wide requirements to all lines; line-level requirements override | M | — |
+| CP-6 | Mark each requirement met / not met / unknown, with evidence | M | — |
+
+### 10.8 Decisions and buyer questions
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| DC-1 | Assign each line exactly one status using documented rules | M | Rules listed in README |
+| DC-2 | Separate buyer-facing issues from internal issues | M | Internal issues never appear in buyer email |
+| DC-3 | Prefer priced alternates over open questions when reasonable options exist | M | 304/304L fixture yields alternates, not a stall |
+| DC-4 | Draft one specific question per open item, with options; group all questions in one buyer email, blocking questions first | M | — |
+| DC-5 | Process a buyer reply and re-quote affected lines as a new revision | S | — |
+
+### 10.9 Verification and observability
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| VR-1 | Re-check every number in each price rationale | M | — |
+| VR-2 | Attach a PRISM Evaluator to at least one output (line status or price claim) | M | Verdict visible in PRISM |
+| VR-3 | Send borderline evaluator results to PRISM's review queue | S | — |
+| VR-4 | Record every stage of every RFQ as one PRISM run under a consistent agent name | M | Full run visible |
+
+### 10.10 Review and output experience
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| UX-1 | One review screen: all lines, status badges, summary counts by status | M | — |
+| UX-2 | Expand any line to see source text, interpreted spec, assumptions, matched item and alternates, availability, price breakdown and benchmark, compliance, issues | M | — |
+| UX-3 | Specialist can approve the quote | M | — |
+| UX-4 | Specialist can edit a line (price, match, status), with the change and reason recorded | S | — |
+| UX-5 | Buyer-facing quote: quote number and revision, buyer's line numbers, specs, unit of measure, prices, alternates, availability/lead time, assumptions, compliance notes, exceptions and no-bids, validity, terms | M | — |
+| UX-6 | Buyer email with grouped questions | M | — |
+| UX-7 | Printable/exportable quote | S | — |
+| UX-8 | Link each RFQ to its PRISM run | S | — |
+
+### 10.11 Quality measurement
+| ID | Requirement | Pri | Acceptance |
+|---|---|---|---|
+| QA-1 | Labeled test set (~25 lines) covering the edge-case catalogue, with expected spec and status | M | — |
+| QA-2 | Report field accuracy, routing accuracy, silent-error count and over-ask count (Section 13) | M | Shown in demo and Devpost |
+
+---
+
+## 11. Non-functional requirements
+
+| ID | Requirement | Pri |
+|---|---|---|
+| NF-1 | **Traceability:** every value on the quote links to its source (RFQ text, catalog, cross-reference, benchmark, rule) | M |
+| NF-2 | **Repeatability:** the same RFQ produces the same matches, prices and statuses; only AI wording may vary | M |
+| NF-3 | **Speed:** a 20-line RFQ produces a draft in under 60 seconds | M |
+| NF-4 | **Audit trail:** every specialist edit and approval is recorded with who, what and why | S |
+| NF-5 | **Confidentiality:** internal fields are never in buyer-facing output; data from one customer never appears in another's quote | M |
+| NF-6 | **Graceful degradation:** if the AI service fails on a line, that line becomes "needs specialist review"; the rest of the quote still completes | S |
+| NF-7 | **Scale:** large RFQs (hundreds of lines) process progressively with partial results visible | L |
+| NF-8 | **Usability:** a quoting specialist can review and approve without instructions | M |
+
+---
+
+## 12. Edge-case catalogue
+
+Each case has an expected behavior. Cases marked M are covered by the hackathon test set.
+
+### Document level
+| # | Case | Example | Expected behavior | Pri |
+|---|---|---|---|---|
+| D1 | Email thread with prior messages | RFQ forwarded with an old quote below | Only the newest request is read | M |
+| D2 | Signatures, disclaimers, phone numbers | "Cell 212-555-0148" | Not read as items or dimensions | M |
+| D3 | Not an RFQ | Order-status question, invoice dispute | Labeled; no quote | S |
+| D4 | Revised RFQ | "Rev 2: line 4 now 316" | Only changed lines re-quoted; new revision | L |
+| D5 | Missing drawing | "Per dwg 4471 rev B" | Buyer asked for the drawing | M |
+| D6 | Table split across PDF pages; wrapped descriptions | — | One line, not two | S |
+| D7 | Requirements mixed into the item list | "All material DFARS compliant" between lines | Applied as RFQ-wide requirement, not an item | M |
+| D8 | Response due date already passed | — | Shown to specialist | S |
+| D9 | Multiple ship-to locations / split deliveries | — | Specialist review | L |
+| D10 | Buyer's own line numbering | Lines 10, 20, 30 | Preserved on the quote | M |
+
+### Line parsing
+| # | Case | Example | Expected behavior | Pri |
+|---|---|---|---|---|
+| L1 | Same item, different wording | Track's two example strings | Identical fingerprint | M |
+| L2 | Shorthand | SS, CRS, HRP&O, AL, ga, dia, sch | Expanded correctly | M |
+| L3 | Typos / OCR confusions | "3O4", "6O61-T6" | Corrected only if unambiguous, logged as assumption; else question | S |
+| L4 | "Same as above, but 316" | — | Inherits prior line, logged | S |
+| L5 | Customer part number only | "ACME-PN 88213" | Cross-reference if known; else buyer question | M |
+| L6 | Multiple items in one line | "304 & 316 sheet, 16ga, 4x8, 10 ea" | Split into linked lines | S |
+| L7 | Buyer asks for alternates | "Quote 304 and 316", "or equal" | Both priced as labeled alternates | S |
+| L8 | Quantity breaks | "Price @ 10 / 50 / 100" | Each tier priced | S |
+| L9 | Service/charge lines | Freight, cutting, cert fee | Treated as charge/term, not catalog item | S |
+
+### Units and dimensions
+| # | Case | Example | Expected behavior | Pri |
+|---|---|---|---|---|
+| U1 | Fractions in all forms | 1-1/2, 1 1/2, 1.5", 1½ | Same value | M |
+| U2 | Feet vs. inches | "4x8", "10'", "120 in" | Explicit units used; feet inferred only for standard sheet sizes, logged | M |
+| U3 | Metric and decimal commas | "1,5 mm", "1219 x 2438" | Converted; unusual sizes flagged | S |
+| U4 | Gauge depends on material; tube gauge differs from sheet gauge | "16ga" on stainless vs. aluminum | Material-specific conversion; gauge with unknown material → question | M |
+| U5 | Pipe nominal size and schedule | "2 in sch 40" | Treated as pipe sizing, never as a literal 2.000" diameter | S |
+| U6 | Dimension order unclear | "48 x .25 x 96" | Thickness = smallest for flat products; logged | M |
+| U7 | Thickness conflicts with gauge | "16ga, 0.075 in" | Within tolerance → note; beyond → question | M |
+| U8 | Tolerances | "+/- .005", "min wall" | Carried to quote; "unknown" if catalog can't confirm | S |
+| U9 | Sheet vs. plate naming | "1/4 sheet" | Form inferred from thickness (boundary differs by material); noted, not an error | S |
+
+### Material and specification
+| # | Case | Example | Expected behavior | Pri |
+|---|---|---|---|---|
+| M1 | Grade missing | "stainless sheet 16ga 4x8" | Alternates (common grades) + question | M |
+| M2 | Low-carbon variants | 304 vs. 304L | Dual-certified stock offered as alternate; confirm | M |
+| M3 | Aluminum temper missing | "6061 plate 1/2" | Alternates by temper or question | S |
+| M4 | Finish missing or unavailable | #4, 2B, mill, PVC-coated | Standard finish as stated assumption; question if finish-critical | S |
+| M5 | Standard missing | — | Default standard for grade and form, as a stated assumption | M |
+| M6 | Standard conflicts with form | Bar standard on a sheet line | Question | S |
+| M7 | Pressure-vessel spec | "SA-240" vs. "A240" | Match only items certified to it; else flag | S |
+| M8 | Carbon sheet condition | Hot rolled vs. cold rolled vs. pickled & oiled | Specified or question | S |
+
+### Quantity and unit of measure
+| # | Case | Example | Expected behavior | Pri |
+|---|---|---|---|---|
+| Q1 | Quantity missing | — | Buyer question | M |
+| Q2 | Quantity by weight or length | "2,000 lbs", "20 cwt", "240 ft" | Converted; priced in buyer's unit | M |
+| Q3 | "Lot" / "as required" | — | Buyer question | S |
+| Q4 | Quantity exceeds stock | — | Partial availability + lead time | M |
+| Q5 | Very small order | 1 piece | Minimum charge applied and shown | S |
+
+### Commercial
+| # | Case | Example | Expected behavior | Pri |
+|---|---|---|---|---|
+| C1 | Metal price volatility | — | Short validity; stainless surcharge shown separately and dated | S |
+| C2 | Repeat customer with prior price | — | Prior price shown to specialist | L |
+| C3 | Cut-to-size requested | "Cut to 12 x 24" | Processing charge or specialist review | S |
+| C4 | Freight/delivery terms requested | "FOB destination" | Stated as a term; freight not priced but called out | S |
+| C5 | Requested date can't be met | — | Flagged | S |
+| C6 | Non-USD currency | — | Specialist review | L |
+
+### Compliance
+| # | Case | Example | Expected behavior | Pri |
+|---|---|---|---|---|
+| P1 | Mill test reports | "MTRs required", "3.1 certs" | Per-item check | M |
+| P2 | "Domestic" is ambiguous | Melted vs. manufactured | Question which rule applies; DFARS = country of melt | M |
+| P3 | Header requirement vs. line override | — | Line overrides header | M |
+| P4 | Industry-specific requirements | Sour service, PMI, RoHS/REACH | Detected; "unknown" if unverifiable | S |
+| P5 | Requirement can't be verified | No data on the item | "Unknown", never "met" | M |
+
+### Matching
+| # | Case | Expected behavior | Pri |
+|---|---|---|---|
+| X1 | Exact match | Quoted | M |
+| X2 | Near size, or cut from larger stock | Labeled alternate or processing, never silent substitution | S |
+| X3 | Two equally good matches | Alternates or specialist review | M |
+| X4 | No match | No bid with reason | M |
+| X5 | Item exists but out of stock, substitute in stock | Alternate | S |
+| X6 | Matching paths disagree | Specialist review | S |
+
+### Security and confidentiality
+| # | Case | Expected behavior | Pri |
+|---|---|---|---|
+| S1 | Hidden/injected instructions in RFQ | Withheld, no effect | M |
+| S2 | Internal data in buyer output | Blocked by leak check | M |
+| S3 | AI-drafted question promises price or date | Blocked by verification | M |
+
+### Buyer interaction
+| # | Case | Expected behavior | Pri |
+|---|---|---|---|
+| B1 | Many small ambiguities | Resolved via alternates and stated assumptions; only blocking questions asked | M |
+| B2 | Buyer answers some questions | Affected lines re-quoted; new revision | S |
+| B3 | Buyer answer still ambiguous | Follow-up question, not a guess | L |
+
+---
+
+## 13. Success metrics
+
+| Metric | Definition | Target (test set) |
+|---|---|---|
+| **Silent-error count** | Lines quoted (✅/⚠️) whose spec, match or price is wrong | **0** |
+| **Routing accuracy** | Lines given the expected status | ≥ 85% |
+| **Over-ask count** | Buyer questions where the test set says the answer was determinable | ≤ 2 |
+| **Field accuracy** | Interpreted fields matching the labeled answer | ≥ 90% |
+| **Touchless rate** | Lines needing no specialist edit | Reported |
+| **Rationale consistency** | Price explanations whose numbers match the calculation | 100% |
+| **Leak count** | Internal fields in buyer-facing output | 0 |
+| **Manipulation effect** | Seeded injection changes any output | No |
+| **Time to draft** | 20-line RFQ | < 60 s |
+
+The first two pull in opposite directions on purpose. Asking about everything drives silent errors to zero but makes the tool useless. The product is judged on both together.
+
+---
+
+## 14. Release scope
+
+| Phase | Includes |
+|---|---|
+| **Hackathon MVP (M)** | Email + PDF intake, thread/signature stripping, safety screen, interpret with source evidence, standardize, catalog + cross-reference matching, stock status, pricing with margin floor, benchmark and validity, compliance checks, all line statuses, alternates, grouped buyer questions, leak check, verification, PRISM tracing/guardrail/evaluator/Knowledge Base, review screen with approve, buyer-facing quote, test-set metrics |
+| **Stretch today (S)** | Spreadsheet intake, dual-path matching agreement, alloy surcharge and processing charges, quantity breaks, lead times, line edits, buyer-reply loop, export, more edge cases |
+| **Later (L)** | Learning cross-references from corrections, customer price history, revisions, multi-ship-to, large-RFQ streaming, ERP/live price integration, adjustable autonomy per customer |
+
+**Cut order if behind:** spreadsheet intake → export → quantity breaks → surcharge/processing charges → dual-path matching (keep single path plus thresholds).
+**Never cut:** source evidence, rules-based pricing, the line statuses (including alternates), buyer vs. internal separation, leak check, the three PRISM requirements, the test-set metrics.
+
+---
+
+## 15. Event and platform requirements
 
 | ID | Requirement | Covered by |
 |---|---|---|
 | EV-1 | Built entirely during the event | — |
-| EV-2 | Uses NicrronNinoo for AI model access | Stages 2, 7 |
+| EV-2 | Uses NicrronNinoo for AI model access | Stages 0, 3, 5 (path D), 9 |
 | EV-3 | Uses Block Convey PRISM; one workspace per team, project named after the team, agent name on every recorded call | VR-4 |
 | EV-4 | PRISM Guardrail on at least one input | SF-1 |
 | EV-5 | PRISM Evaluator on at least one scored or classified output | VR-2 |
 | EV-6 | At least one claim grounded through the PRISM Knowledge Base | MT-6 |
-| EV-7 | Demonstrates what the product does when it isn't sure | Section 7, DC-1/2 |
-| EV-8 | A judge can check the output | RD-2, UX-2, PR-3 |
+| EV-7 | Shows what it does when it isn't sure | Sections 6, 9; DC-1–DC-4 |
+| EV-8 | A judge can check the output | NF-1, UX-2, PR-3, PR-4 |
 | EV-9 | Devpost page: name and one-liner, track, what and why, accuracy and uncertainty handling, tools (NicrronNinoo and Block Convey), team and roles, video link, GitHub link | Submission checklist |
 
-### Track requirement traceability
+### Track traceability
 
 | RudCo asks for... | Requirements |
 |---|---|
-| Handle messy emails, PDFs and spreadsheets | IN-1, IN-2, IN-3 |
-| Recognize the same item written different ways | RD-5, RD-6, RD-9 |
-| Parse each line into a standard spec | RD-1 to RD-8 |
-| Match to a supplier catalog | MT-1 to MT-6 |
-| Price against benchmarks and explain why it's competitive | PR-1 to PR-6 |
-| Flag compliance requirements | CP-1 to CP-5 |
-| Send ambiguous lines back with a question instead of guessing | DC-1 to DC-3, MT-3, MT-4, RD-8 |
-| A ready-to-send quote | UX-4, UX-5, DC-3 |
+| Handle messy emails, PDFs and spreadsheets | IN-1 to IN-7 |
+| Recognize the same item written different ways | RD-5, RD-8, L1–L2 |
+| Parse each line into a standard spec | RD-1 to RD-9 |
+| Match each line to a supplier catalog | MT-1 to MT-6 |
+| Price against benchmarks and explain why it's competitive | PR-1 to PR-10 |
+| Flag compliance (MTRs, origin, spec certs) | CP-1 to CP-6 |
+| Send ambiguous lines back with a question instead of guessing | DC-1 to DC-5, Section 9 |
+| Ready-to-send quote | UX-3, UX-5, UX-6, SF-4 |
 
 ---
 
-## 10. Demo data
+## 16. Demo data
 
-All demo data is synthetic and labeled as such.
+All synthetic and labeled.
 
-- **Supplier catalog:** ~60 items across stainless, carbon steel and aluminum in sheet, plate, bar and tube, each with cost, origin, mill test report availability and certifications.
-- **Market benchmarks:** price ranges by grade and form, each with a source label and date.
-- **Reference tables:** gauge-to-thickness by material, material densities, abbreviations, default standards by grade, allowed substitutions.
-- **Three sample RFQs** (email, PDF, spreadsheet), seeded with:
-  - the two equivalent strings from the track description
-  - a duplicate item written two ways
-  - a line with no grade
-  - a bare "4x8" sheet size (quoted, with the feet assumption shown)
-  - a bar length with no unit (sent to clarification)
-  - a buyer discount request in the email header (shown as a term; changes nothing)
-  - a gauge/thickness conflict
-  - a "domestic material only" requirement against a non-domestic catalog item
-  - an item not in the catalog
-  - a hidden instruction trying to change prices (PDF)
-- **Labeled test set:** ~20 lines with expected results.
+- **Catalog** (~60 items): stainless, carbon and aluminum in sheet, plate, bar, tube and pipe. Each has cost, stock quantity, lead time, country of melt, MTR availability, certifications (including dual-certified 304/304L and 316/316L items).
+- **Customer cross-reference table:** a few customer part numbers mapped to catalog items.
+- **Benchmarks:** price ranges by material and form, with source label and date; a monthly stainless surcharge table.
+- **Reference tables:** gauge by material, densities, abbreviations, default standards, substitution rules, pricing rules (margin floor, minimum charge, cutting charge, validity days).
+- **Three RFQs:**
+  - **Email (thread):** forwarded history and signature (D1, D2); track's two example strings (L1); missing grade (M1); "4x8" (U2); customer part number (L5); "DFARS" note in the list (D7, P2)
+  - **PDF:** gauge/thickness conflict (U7); 304 vs. 304L (M2); quantity in lbs (Q2); quantity above stock (Q4); missing drawing (D5); not-in-catalog item (X4); hidden injection text (S1)
+  - **Spreadsheet (stretch):** buyer line numbers (D10); quantity breaks (L8); missing quantity (Q1)
+- **Test set:** ~25 labeled lines drawn from the above.
 
 ---
 
-## 11. Success measures
+## 17. Demo script (~2 minutes)
 
-| Measure | Target |
+1. Drop in the messy email thread. A draft appears in seconds; status counts at the top.
+2. The two differently written lines became the same item.
+3. Expand a quoted line: source text → spec → matched item → price breakdown vs. benchmark → compliance.
+4. The missing-grade line: priced alternates, not a stall.
+5. The buyer email: few, grouped, specific questions.
+6. A "needs specialist review" line (below margin floor) that never reaches the buyer.
+7. The withheld injection attempt.
+8. PRISM: the run, guardrail catch, evaluator verdict.
+9. Approve → buyer-facing quote (no internal data on it).
+10. Close on the metrics: 0 silent errors, routing accuracy, over-ask count.
+
+---
+
+## 18. Assumptions and dependencies
+
+- NicrronNinoo provides model access; PRISM provides tracing, guardrails, evaluators and Knowledge Base.
+- All business data (catalog, stock, costs, benchmarks, surcharges, cross-references) is synthetic.
+- Pricing rules (margin floor, minimum charge, validity) are illustrative defaults a business would configure.
+- English-language RFQs, USD.
+
+---
+
+## 19. Risks and open questions
+
+| # | Item | Plan |
+|---|---|---|
+| Q1 | Does PRISM's Knowledge Base support direct lookups, or only grounding checks after the fact? | Ask the PRISM team at setup |
+| Q2 | PRISM blocks (vs. only flags) only on traffic through its proxy, which supports specific model providers. Can it screen NicrronNinoo traffic? | Ask at setup; fallback is screening via a supported provider plus our own check |
+| Q3 | Evaluator runs cost limited PRISM credits | Run on demo sessions only |
+| Q4 | How does RudCo actually price (per lb, cwt, piece)? Do they send partial quotes? Do buyers accept alternates? Typical validity window? | Ask RudCo on the floor early; adjust defaults |
+| Q5 | Can we get a real anonymized RFQ from RudCo? | Ask early |
+| R1 | Scope vs. ~4 hours | Phased scope and cut order (Section 14) |
+| R2 | Synthetic data mistaken for real pricing | Labeled everywhere |
+| R3 | Over-asking makes the product useless | Over-ask metric; alternates-first principle |
+
+---
+
+## 20. Out of scope
+
+Sending messages, live market/ERP/inventory data, scanned or handwritten documents, CAD/drawing reading, freight pricing, order entry, invoicing, user accounts and permissions.
+
+---
+
+## 21. Glossary
+
+| Term | Meaning |
 |---|---|
-| Test-set accuracy (correct quote or correct referral to buyer) | ≥ 85% |
-| Lines wrongly quoted when they should have been asked or declined | 0 |
-| Share of test-set lines quoted without a question | Reported, no target |
-| Price explanations whose numbers don't match the calculation | 0 |
-| Seeded manipulation attempt has any effect | No |
-| Time to process a sample RFQ | Under 1 minute, with lines appearing as they finish |
-| Every displayed value traceable to a source | 100% |
+| **RFQ** | Request for quote: a buyer's list of items and quantities needing prices |
+| **Alternate** | A clearly labeled, separately priced option offered when the request is ambiguous or the exact item isn't available |
+| **Cross-reference** | Mapping from a customer's part number to the supplier's own item |
+| **MTR** | Mill test report: certifies chemistry and mechanical properties of a specific heat of metal (often "EN 10204 3.1") |
+| **Alloy surcharge** | A monthly, grade-specific price component for stainless that tracks alloy (nickel, chrome, moly) costs |
+| **cwt** | Hundredweight (100 lb); a common pricing unit for steel |
+| **Dual-certified** | Material certified to meet two grades or standards at once (e.g. 304/304L) |
+| **Country of melt** | Where the metal was melted; the basis for some domestic-sourcing rules (e.g. DFARS specialty metals) |
+| **Gauge** | A thickness designation whose actual value depends on the material |
+| **Margin floor** | Minimum acceptable margin; below it, a person must approve |
+| **Touchless rate** | Share of lines approved without any human edit |
 
 ---
 
-## 12. Demo script (~2 minutes)
+## 22. References
 
-1. Upload the messy sample RFQ (a pre-processed copy is ready in case the live run is slow).
-2. Point to the two differently written lines that became the same item.
-3. Expand one quoted line: original text → interpreted spec → matched item → price math against the benchmark.
-4. Show the ❓ lines and the buyer email with specific questions; answer one and watch that line re-quote (if DC-4 is built).
-5. Show the ⛔ line and its reason.
-6. Show the withheld manipulation attempt.
-7. Open the PRISM run: every stage, the guardrail catch, the evaluator verdict.
-8. Close on the test-set accuracy number.
-
----
-
-## 13. Open questions and risks
-
-| # | Question / risk | Impact | Plan |
-|---|---|---|---|
-| Q1 | Does the PRISM Knowledge Base support direct lookups from our product, or only grounding checks after the fact? | Determines how MT-6 is demonstrated | Ask the PRISM team at setup |
-| Q2 | PRISM can only *block* (not just flag) on traffic routed through its proxy, which supports specific model providers. Can it screen NicrronNinoo traffic? | Determines how SF-1 is demonstrated | Ask at setup; fallback is screening through a supported provider plus our own check |
-| Q3 | Evaluator runs cost PRISM credits (limited supply) | Limits how often VR-2 can run | Run on demo sessions only |
-| Q4 | Can we get a real (anonymized) RFQ from RudCo? | Grounds the demo in their actual problem | Ask RudCo on the floor early |
-| Q5 | We do not have a PRISM workspace or API key yet, and its public docs only describe run recording; guardrails, evaluators and the Knowledge Base may be dashboard-only | Four Musts (SF-1, MT-6, VR-2, VR-4) depend on it | Get the key and answers to Q1 and Q2 before the technical plan is final |
-| Q6 | Statuses and prices are rule-made, so an evaluator on them checks little. Does an evaluator on an AI-written output (the line reading or the buyer question) satisfy EV-5's "scored or classified output"? | Decides where VR-2 attaches | Ask the PRISM team; default stays line status |
-| R1 | Time: ~4 hours of build | Scope | Cut order: printable export → duplicate linking → review queue → AI-worded questions (use templates) → substitution proposals → re-quote after an answer → spreadsheet intake (cheap, and one of the three formats the track names, so cut last). Never cut: source tracing, fixed pricing rules, the four statuses, the three PRISM requirements |
-| R2 | Synthetic data could be mistaken for real pricing | Trust | Label it everywhere |
-
----
-
-## 14. Out of scope
-
-Sending messages to buyers, live market data, real inventory, ERP integration, scanned or handwritten documents, multi-currency, freight and lead-time quoting, user accounts and permissions.
-
----
-
-## 15. Changes in this revision
-
-- **Closed list of allowed assumptions (7.1).** "Low-risk assumption" was undefined, so the status rules were not fixed. The track's own two example strings need an assumption each and now come out as "Quoted with assumptions".
-- **Status rules written out in order (7.2)**, including the missing case: a requirement that can't be confirmed is a question.
-- **Specialist review flag (7.3).** Internal problems (price above market, failed verification, withheld text) no longer have to be forced into a buyer-facing status.
-- **Dual-certified stock is not a substitution (MT-4).** Otherwise every 304 line would become a question.
-- **Compliance requirements constrain matching (stages 4 and 6).** Previously a non-compliant item could be chosen when a compliant one existed.
-- **Verify stage made concrete (stage 8)**: fixed checks, no AI judging its own work.
-- **Knowledge Base grounds a claim, not the matching (MT-6).**
-- **Buyer and specialist views separated (principle 7, PR-3, UX-4)** so cost and margin can't leak onto the quote.
-- **Pricing rule must be stated (PR-7)** and benchmarks are by grade, not material.
-- **Buyer discount requests are terms, not attacks (SF-4).**
-- **Accuracy reported as expected vs. actual with error types split (QA-2)**, plus a judge-typed line (QA-3).
-- **Re-quote after an answer promoted to Should (DC-4); spreadsheet intake moved to the end of the cut order (R1).**
-- **Field confidence levels removed (stage 2)**: nothing used them.
-- **Demo data:** the ambiguous-units case is now a bar length; a bare "4x8" sheet is an allowed assumption.
-- **New open questions Q5 and Q6** on PRISM access and where the evaluator attaches.
+- Get Hired Hack Devpost — https://get-hired-hack-nyc.devpost.com/ and /resources
+- Block Convey PRISM docs — https://blockconvey.com/docs ; Evaluators — https://blockconvey.com/prism/evaluators
+- Proton.ai, "RFQ Automation Software" (distributor workflow, matching, review dial, cross-referencing) — https://www.proton.ai/blog/rfq-automation-software
+- Kodiak, metal service center RFQ problem statement — https://kodiakllc.notion.site/Take-Home-Screen-ec3477d8d6ec49dbbf123ebf407b4d36
+- Outokumpu, stainless price structure and alloy surcharges — https://www.outokumpu.com/surcharges
+- Cleveland-Cliffs stainless surcharge table (applied at time of shipment) — https://www.clevelandcliffs.com/
+- Fastmarkets, stainless sheet assessed per cwt — https://fastmarkets.com/insights/stainless-surcharges-set-to-soar-in-april
