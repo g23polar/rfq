@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"material\": {\"value\": \"SS\", \"unit\": null, \"source_text\": \"304 SS\"}, \"grade\": {\"value\": \"304\", \"unit\": null, \"source_text\": \"304 SS\"}, \"form\": {\"value\": \"sheet\", \"unit\": null, \"source_text\": \"sheet\"}, \"thickness\": null, \"gauge\": {\"value\": \"11\", \"unit\": \"ga\", \"source_text\": \"11 ga\"}, \"width\": null, \"length\": null, \"diameter\": null, \"wall\": null, \"unlabeled_dimensions\": [{\"value\": \"48\", \"unit\": null, \"source_text\": \"48 x 120\"}, {\"value\": \"120\", \"unit\": null, \"source_text\": \"48 x 120\"}], \"quantity\": {\"value\": \"12\", \"unit\": \"ea\", \"source_text\": \"12 ea\"}, \"standard\": null, \"finish\": null, \"temper\": null, \"tolerance\": null, \"customer_part_no\": null, \"drawing_ref\": null, \"requirements\": []}",
+ "tokens_in": 2317,
+ "tokens_out": 455
+}

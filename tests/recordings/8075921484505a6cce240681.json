@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"material\": null, \"grade\": null, \"form\": null, \"thickness\": null, \"gauge\": null, \"width\": null, \"length\": null, \"diameter\": null, \"wall\": null, \"unlabeled_dimensions\": [], \"quantity\": {\"value\": \"20\", \"unit\": \"ea\", \"source_text\": \"20 ea\"}, \"standard\": null, \"finish\": null, \"temper\": null, \"tolerance\": null, \"customer_part_no\": {\"value\": \"ACME-PN 88213\", \"source_text\": \"ACME-PN 88213\"}, \"drawing_ref\": null, \"requirements\": []}",
+ "tokens_in": 2249,
+ "tokens_out": 187
+}

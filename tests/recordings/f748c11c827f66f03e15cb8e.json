@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-haiku-4-5",
+ "output": "```json\n{\"text\": \"For Line 3, we noticed no grade was specified in your request. Could you please let us know whether you'd prefer 304 or 316? Both options are included in the quote.\"}\n```",
+ "tokens_in": 214,
+ "tokens_out": 53
+}

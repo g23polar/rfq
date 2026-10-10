@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\n  \"material\": {\"value\": \"CRS\", \"source_text\": \"1018 CRS round bar\"},\n  \"grade\": {\"value\": \"1018\", \"source_text\": \"1018 CRS round bar\"},\n  \"form\": {\"value\": \"round bar\", \"source_text\": \"1018 CRS round bar\"},\n  \"thickness\": null,\n  \"gauge\": null,\n  \"width\": null,\n  \"length\": {\"value\": \"12\", \"unit\": \"ft\", \"source_text\": \"1 in dia x 12 ft\"},\n  \"diameter\": {\"value\": \"1\", \"unit\": \"in\", \"source_text\": \"1 in dia x 12 ft\"},\n  \"wall\": null,\n  \"unlabeled_dimensions\": [],\n  \"quantity\": {\"value\": \"1,500\", \"unit\": \"lb\", \"source_text\": \"1,500 lb\"},\n  \"standard\": null,\n  \"finish\": null,\n  \"temper\": null,\n  \"tolerance\": null,\n  \"customer_part_no\": null,\n  \"drawing_ref\": null,\n  \"requirements\": []\n}",
+ "tokens_in": 2299,
+ "tokens_out": 602
+}

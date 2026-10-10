@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"material\": {\"value\": \"CRS\", \"source_text\": \"1018 CRS round bar\"}, \"grade\": {\"value\": \"1018\", \"source_text\": \"1018 CRS round bar\"}, \"form\": {\"value\": \"round bar\", \"source_text\": \"round bar\"}, \"thickness\": null, \"gauge\": null, \"width\": null, \"length\": {\"value\": \"12\", \"unit\": \"ft\", \"source_text\": \"x 12 ft\"}, \"diameter\": {\"value\": \"1\", \"unit\": \"in\", \"source_text\": \"1 in dia\"}, \"wall\": null, \"unlabeled_dimensions\": [], \"quantity\": {\"value\": \"1,500\", \"unit\": \"lb\", \"source_text\": \"1,500 lb\"}, \"standard\": null, \"finish\": null, \"temper\": null, \"tolerance\": null, \"customer_part_no\": null, \"drawing_ref\": null, \"requirements\": []}",
+ "tokens_in": 2323,
+ "tokens_out": 410
+}

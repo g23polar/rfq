@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"material\": {\"value\": \"Inconel\", \"unit\": null, \"source_text\": \"Inconel\"}, \"grade\": {\"value\": \"625\", \"unit\": null, \"source_text\": \"625\"}, \"form\": {\"value\": \"plate\", \"unit\": null, \"source_text\": \"plate\"}, \"thickness\": null, \"gauge\": null, \"width\": null, \"length\": null, \"diameter\": null, \"wall\": null, \"unlabeled_dimensions\": [{\"value\": \"3/8\", \"unit\": null, \"source_text\": \"3/8 x 48 x 96\"}, {\"value\": \"48\", \"unit\": null, \"source_text\": \"3/8 x 48 x 96\"}, {\"value\": \"96\", \"unit\": null, \"source_text\": \"3/8 x 48 x 96\"}], \"quantity\": {\"value\": \"3\", \"unit\": \"ea\", \"source_text\": \"3 ea\"}, \"standard\": null, \"finish\": null, \"temper\": null, \"tolerance\": null, \"customer_part_no\": null, \"drawing_ref\": null, \"requirements\": []}",
+ "tokens_in": 2319,
+ "tokens_out": 524
+}

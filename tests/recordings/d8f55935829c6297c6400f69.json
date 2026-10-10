@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-haiku-4-5",
+ "output": "```json\n{\n  \"text\": \"For Line 8, we have multiple items that could work equally well for your needs. Would you prefer the 2B finish or the #4 finish?\"\n}\n```",
+ "tokens_in": 219,
+ "tokens_out": 50
+}

@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\n  \"material\": {\"value\": \"aluminum\", \"unit\": null, \"source_text\": \"6061-T6 aluminum\"},\n  \"grade\": {\"value\": \"6061-T6\", \"unit\": null, \"source_text\": \"6061-T6 aluminum\"},\n  \"form\": null,\n  \"thickness\": null,\n  \"gauge\": null,\n  \"width\": null,\n  \"length\": null,\n  \"diameter\": null,\n  \"wall\": null,\n  \"unlabeled_dimensions\": [],\n  \"quantity\": {\"value\": \"4\", \"unit\": \"ea\", \"source_text\": \"4 ea\"},\n  \"standard\": null,\n  \"finish\": null,\n  \"temper\": null,\n  \"tolerance\": null,\n  \"customer_part_no\": null,\n  \"drawing_ref\": {\"value\": \"4471 rev B\", \"unit\": null, \"source_text\": \"per dwg 4471 rev B\"},\n  \"requirements\": []\n}",
+ "tokens_in": 2328,
+ "tokens_out": 445
+}

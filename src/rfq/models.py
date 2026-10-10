@@ -297,6 +297,8 @@ class BuyerOffer(BaseModel):
     label: str
     sku: str | None
     description: str | None
+    quantity: float | None = None
+    quantity_unit: PriceUnit | None = None
     availability: Availability | None
     price: BuyerPrice | None
     compliance: list[RequirementResult]
@@ -315,6 +317,7 @@ class BuyerLine(BaseModel):
 class BuyerQuote(BaseModel):
     rfq_id: str
     revision: int
+    created: str = ""
     quote_status: QuoteStatus
     completeness: Literal["complete", "partial"] | None
     customer: str | None
@@ -330,6 +333,8 @@ def _buyer_offer(offer: Offer) -> BuyerOffer:
         label=offer.label,
         sku=offer.candidate.sku if offer.candidate else None,
         description=offer.candidate.description if offer.candidate else None,
+        quantity=offer.spec.quantity,
+        quantity_unit=offer.spec.quantity_unit,
         availability=offer.availability,
         price=price and BuyerPrice(
             unit=price.unit, unit_price=price.unit_price, extended=price.extended,
@@ -365,6 +370,7 @@ def buyer_view(run: Run) -> BuyerQuote:
     return BuyerQuote(
         rfq_id=run.rfq_id,
         revision=run.revision,
+        created=run.created,
         quote_status=run.quote_status,
         completeness=run.completeness,
         customer=str(run.terms.customer.value) if run.terms.customer else None,

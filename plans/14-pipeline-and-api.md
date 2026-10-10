@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Blocked (waits on stage tasks 04 to 13 and 19) |
+| **Status** | Done (M scope); PRISM recording plugs in through one hook when task 13 lands |
 | **Depends on** | 04 to 13, 19 |
 | **Unblocks** | 16, 18, and the live half of 15 |
 
@@ -43,6 +43,27 @@ M: UX-3, UX-5, UX-6, NF-3, NF-5. S: UX-4, UX-7, DC-5, NF-4.
 - **Line edits** (UX-4): `POST /api/rfq/{id}/lines/{n}/edit` changes a price, match or status, with a reason; the edit is recorded with who, what and why (NF-4) and its source is "specialist".
 - **Buyer reply loop** (stage 13, DC-5): apply a buyer's answer to the affected lines, re-run stages 4 to 10 for them, and issue a new revision. An unclear answer produces a follow-up question.
 - **Export** (UX-7): a print stylesheet on the quote page.
+
+## As built
+
+- `pipeline.process(data, filename, today, ref, recorder) -> Processed(run, trace)` in `src/rfq/pipeline.py` runs: read → safety screen → segment → interpret (lines concurrently) → standardize → resolve → availability → price → compliance → decide → verify → reword questions → assemble.
+- `Trace` holds one `Span` per stage (per line for the rule stages) and every model `CallRecord`, collected with `llm.watching`. Two RFQs processed at the same instant would mix their call lists.
+- **PRISM hook (task 13):** define `rfq.prism.record_run(run, trace) -> str | None` (the trace id). `app.py` picks it up automatically; it is called once after the run, and an exception in it is logged and ignored.
+- **Endpoints** (`src/rfq/app.py`, run with `uv run uvicorn rfq.app:app --reload`):
+  - `POST /api/rfq` (multipart `file`, or form field `text`) → the `Run`
+  - `GET /api/samples`, `POST /api/samples/{email|pdf}` → run a fixture
+  - `GET /api/rfq/{id}` → the `Run` (moves draft to in review)
+  - `POST /api/rfq/{id}/approve` with optional `{"by": "name"}` → the `Run`; 409 if the leak check failed
+  - `GET /quote/{id}` → buyer quote page; `GET /api/rfq/{id}/summary` → internal summary text; `GET /api/rfq/{id}/trace` → the trace
+  - `GET /` serves `static/index.html` when task 15 adds it
+- `render.py`: `quote_html`, `email_text`, `internal_summary`. Buyer documents are built from `buyer_view` only; the quote page was designed with the frontend-design skill (mill-document look, print rules included).
+- The leak check runs on the visible text of the quote page plus the email.
+- A stage that raises sends only that line to specialist review (NF-6).
+- **Guard added:** an RFQ-wide requirement is kept only if its wording appears outside the item lines. Segmentation sometimes lifts a line's own standard ("ASTM A36") into the RFQ-wide list, which made every line fail compliance in one live run.
+- Offers that meet the line's requirements are listed ahead of those that don't (the ranking deferred from task 09).
+- Offline tests replay `tests/recordings/`; `scripts/record_fixtures.py` adds responses for changed prompts.
+- Timing, live and uncached: email thread about 11 s, PDF about 31 s.
+- Not built (stretch): line edits, the buyer reply loop, audit trail. Export is covered by the quote page's print rules.
 
 ## Out of scope
 

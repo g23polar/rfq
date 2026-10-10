@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\n  \"material\": {\"value\": \"SS\", \"unit\": null, \"source_text\": \"316 SS\"},\n  \"grade\": {\"value\": \"316\", \"unit\": null, \"source_text\": \"316 SS\"},\n  \"form\": {\"value\": \"plate\", \"unit\": null, \"source_text\": \"plate\"},\n  \"thickness\": null,\n  \"gauge\": null,\n  \"width\": null,\n  \"length\": null,\n  \"diameter\": null,\n  \"wall\": null,\n  \"unlabeled_dimensions\": [\n    {\"value\": \"1/4\", \"unit\": null, \"source_text\": \"1/4\"},\n    {\"value\": \"48\", \"unit\": null, \"source_text\": \"48\"},\n    {\"value\": \"96\", \"unit\": null, \"source_text\": \"96\"}\n  ],\n  \"quantity\": {\"value\": \"2\", \"unit\": \"ea\", \"source_text\": \"2 ea\"},\n  \"standard\": null,\n  \"finish\": null,\n  \"temper\": null,\n  \"tolerance\": null,\n  \"customer_part_no\": null,\n  \"drawing_ref\": null,\n  \"requirements\": []\n}",
+ "tokens_in": 2258,
+ "tokens_out": 958
+}

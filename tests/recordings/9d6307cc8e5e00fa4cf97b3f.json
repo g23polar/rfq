@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"customer\": {\"quote\": \"Acme Fabrication\", \"value\": \"Acme Fabrication\"}, \"due_date\": {\"quote\": \"Need pricing by Wed Oct 14.\", \"value\": \"2026-10-14\"}, \"delivery\": {\"quote\": \"Delivery FOB our dock, Newark NJ.\", \"value\": null}, \"requirements\": [{\"quote\": \"All material DFARS compliant\", \"value\": null}], \"commercial_requests\": [{\"quote\": \"Please send your best price.\", \"value\": null}], \"attachment_refs\": [], \"lines\": [{\"buyer_line_no\": \"1\", \"text\": \"304 SS sheet 16ga 4x8 - 10 ea\", \"kind\": \"item\"}, {\"buyer_line_no\": \"2\", \"text\": \"Stainless 304, 0.060 in, 48 x 96 - 6 ea\", \"kind\": \"item\"}, {\"buyer_line_no\": \"3\", \"text\": \"Stainless sheet 16ga 4x8 - 12 ea\", \"kind\": \"item\"}, {\"buyer_line_no\": null, \"text\": \"All material DFARS compliant\", \"kind\": \"requirement\"}, {\"buyer_line_no\": \"4\", \"text\": \"ACME-PN 88213 - 20 ea\", \"kind\": \"item\"}, {\"buyer_line_no\": \"5\", \"text\": \"316 SS round bar 1-1/2\\\" dia x 12 ft - 4 ea\", \"kind\": \"item\"}, {\"buyer_line_no\": \"6\", \"text\": \"316 SS plate 1/4 x 48 x 96 - 2 ea\", \"kind\": \"item\"}]}",
+ "tokens_in": 1660,
+ "tokens_out": 1052
+}

@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\n  \"material\": {\"value\": \"stainless\", \"source_text\": \"stainless\"},\n  \"grade\": {\"value\": \"304\", \"source_text\": \"304\"},\n  \"form\": {\"value\": \"sheet\", \"source_text\": \"sheet\"},\n  \"thickness\": {\"value\": \"0.075\", \"unit\": \"in\", \"source_text\": \"0.075 in\"},\n  \"gauge\": {\"value\": \"16\", \"unit\": \"ga\", \"source_text\": \"16 ga\"},\n  \"width\": null,\n  \"length\": null,\n  \"diameter\": null,\n  \"wall\": null,\n  \"unlabeled_dimensions\": [\n    {\"value\": \"48\", \"source_text\": \"48 x 96\"},\n    {\"value\": \"96\", \"source_text\": \"48 x 96\"}\n  ],\n  \"quantity\": {\"value\": \"15\", \"unit\": \"ea\", \"source_text\": \"15 ea\"},\n  \"standard\": null,\n  \"finish\": null,\n  \"temper\": null,\n  \"tolerance\": null,\n  \"customer_part_no\": null,\n  \"drawing_ref\": null,\n  \"requirements\": []\n}",
+ "tokens_in": 2327,
+ "tokens_out": 773
+}

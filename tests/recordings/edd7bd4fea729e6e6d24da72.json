@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-haiku-4-5",
+ "output": "```json\n{\"text\": \"For Line 5, could you please provide the attachment for drawing 4471 rev B? It wasn't included with your request.\"}\n```",
+ "tokens_in": 184,
+ "tokens_out": 41
+}

@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Generic, Literal, TypeVar
@@ -52,6 +53,20 @@ class ModelCallError(Exception):
     def __init__(self, message: str, calls: list[CallRecord] | None = None):
         super().__init__(message)
         self.calls = calls or []
+
+
+_watchers: list = []
+
+
+@contextmanager
+def watching(sink: list[CallRecord]):
+    """Collect every model call made while the block runs, from any thread, into `sink`.
+    Two runs processed at the same moment would see each other's calls."""
+    _watchers.append(sink.append)
+    try:
+        yield sink
+    finally:
+        _watchers.remove(sink.append)
 
 
 def _cache_dir() -> Path:
@@ -129,6 +144,8 @@ def call_json(system: str, user: str, shape: type[T], model: str = MODEL_READ,
         except ModelCallError as e:
             raise ModelCallError(str(e), calls) from e
         calls.append(record)
+        for watcher in list(_watchers):
+            watcher(record)
         try:
             return ModelResult(shape.model_validate_json(_extract_json(record.output)), calls)
         except (ValidationError, ValueError) as e:

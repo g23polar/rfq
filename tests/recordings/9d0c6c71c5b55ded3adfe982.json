@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"material\": {\"value\": \"Stainless\", \"unit\": null, \"source_text\": \"Stainless\"}, \"grade\": null, \"form\": {\"value\": \"sheet\", \"unit\": null, \"source_text\": \"sheet\"}, \"thickness\": null, \"gauge\": {\"value\": \"16\", \"unit\": \"ga\", \"source_text\": \"16ga\"}, \"width\": null, \"length\": null, \"diameter\": null, \"wall\": null, \"unlabeled_dimensions\": [{\"value\": \"4\", \"unit\": null, \"source_text\": \"4x8\"}, {\"value\": \"8\", \"unit\": null, \"source_text\": \"4x8\"}], \"quantity\": {\"value\": \"12\", \"unit\": \"ea\", \"source_text\": \"12 ea\"}, \"standard\": null, \"finish\": null, \"temper\": null, \"tolerance\": null, \"customer_part_no\": null, \"drawing_ref\": null, \"requirements\": []}",
+ "tokens_in": 2255,
+ "tokens_out": 402
+}

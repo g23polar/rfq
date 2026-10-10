@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"material\": {\"value\": \"SS\", \"source_text\": \"304 SS plate\"}, \"grade\": {\"value\": \"304\", \"source_text\": \"304 SS plate\"}, \"form\": {\"value\": \"plate\", \"source_text\": \"SS plate\"}, \"thickness\": null, \"gauge\": null, \"width\": null, \"length\": null, \"diameter\": null, \"wall\": null, \"unlabeled_dimensions\": [{\"value\": \"1/4\", \"unit\": \"in\", \"source_text\": \"1/4 in x 48 in x 96 in\"}, {\"value\": \"48\", \"unit\": \"in\", \"source_text\": \"1/4 in x 48 in x 96 in\"}, {\"value\": \"96\", \"unit\": \"in\", \"source_text\": \"1/4 in x 48 in x 96 in\"}], \"quantity\": {\"value\": \"8\", \"unit\": \"ea\", \"source_text\": \"8 ea\"}, \"standard\": {\"value\": \"ASTM A240\", \"source_text\": \"ASTM A240\"}, \"finish\": null, \"temper\": null, \"tolerance\": null, \"customer_part_no\": null, \"drawing_ref\": null, \"requirements\": []}",
+ "tokens_in": 2304,
+ "tokens_out": 588
+}

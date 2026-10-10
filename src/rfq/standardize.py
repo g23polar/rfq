@@ -156,6 +156,11 @@ def _grade_regex(variant: str) -> re.Pattern:
     return re.compile(r"(?<![A-Z0-9])" + "".join(parts) + r"(?![A-Z0-9])")
 
 
+def _pair_text(w: "Dim", l: "Dim") -> str:
+    """How the buyer wrote a width and length: once if both came from one piece of text ("4x8")."""
+    return w.text if w.text == l.text else f"{w.text} x {l.text}"
+
+
 class _Standardizer:
     def __init__(self, line: Line, ctx: Context):
         self.ctx = ctx
@@ -487,11 +492,11 @@ class _Standardizer:
                 if pair in sizes:
                     w.factor = l.factor = factor
                     if factor != 1.0:
-                        self.add("assumption", f"\"{w.text} x {l.text}\" had no unit; it was "
+                        self.add("assumption", f"\"{_pair_text(w, l)}\" had no unit; it was "
                                  f"read as {name} ({_fmt(w.inches)} in x {_fmt(l.inches)} in), "
                                  "which is a standard sheet size.", "width")
                     return
-            self.add("missing", f"Please give the unit for the size \"{w.text} x {l.text}\" "
+            self.add("missing", f"Please give the unit for the size \"{_pair_text(w, l)}\" "
                      "(inches or feet).", "width", flag=True)
             self.flagged.add("length")
             labeled.pop("width"), labeled.pop("length")
@@ -637,7 +642,9 @@ def standardize(line: Line, ctx: Context) -> Line:
     s.dimensions()
     s.flat_form()
     s.standard_finish_temper()
-    s.checks()
+    if not r.drawing_ref:
+        # A part defined by a drawing is asked about once, for the drawing (D5), not field by field.
+        s.checks()
     s.fingerprint()
     line.spec = s.spec
     line.issues.extend(s.issues)

@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "```json\n{\n  \"material\": {\n    \"value\": \"stainless\",\n    \"unit\": null,\n    \"source_text\": \"stainless\"\n  },\n  \"grade\": {\n    \"value\": \"304\",\n    \"unit\": null,\n    \"source_text\": \"304\"\n  },\n  \"form\": {\n    \"value\": \"sheet\",\n    \"unit\": null,\n    \"source_text\": \"sheet\"\n  },\n  \"thickness\": {\n    \"value\": \"0.075\",\n    \"unit\": \"in\",\n    \"source_text\": \"0.075 in\"\n  },\n  \"gauge\": {\n    \"value\": \"16\",\n    \"unit\": \"ga\",\n    \"source_text\": \"16 ga\"\n  },\n  \"width\": null,\n  \"length\": null,\n  \"diameter\": null,\n  \"wall\": null,\n  \"unlabeled_dimensions\": [\n    {\n      \"value\": \"48\",\n      \"unit\": null,\n      \"source_text\": \"48 x 96\"\n    },\n    {\n      \"value\": \"96\",\n      \"unit\": null,\n      \"source_text\": \"48 x 96\"\n    }\n  ],\n  \"quantity\": {\n    \"value\": \"15\",\n    \"unit\": \"ea\",\n    \"source_text\": \"15 ea\"\n  },\n  \"standard\": null,\n  \"finish\": null,\n  \"temper\": null,\n  \"tolerance\": null,\n  \"customer_part_no\": null,\n  \"drawing_ref\": null,\n  \"requirements\": []\n}\n```",
+ "tokens_in": 2303,
+ "tokens_out": 881
+}

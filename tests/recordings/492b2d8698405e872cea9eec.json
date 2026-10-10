@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\"material\": {\"value\": \"stainless\", \"source_text\": \"stainless sheet\"}, \"grade\": {\"value\": \"304 or 304L?\", \"source_text\": \"304 or 304L?\"}, \"form\": {\"value\": \"sheet\", \"source_text\": \"stainless sheet\"}, \"thickness\": null, \"gauge\": {\"value\": \"14\", \"unit\": \"ga\", \"source_text\": \"14 ga\"}, \"width\": null, \"length\": null, \"diameter\": null, \"wall\": null, \"unlabeled_dimensions\": [{\"value\": \"48\", \"source_text\": \"48 x 96\"}, {\"value\": \"96\", \"source_text\": \"48 x 96\"}], \"quantity\": {\"value\": \"6\", \"unit\": \"ea\", \"source_text\": \"6 ea\"}, \"standard\": {\"value\": \"ASTM A240\", \"source_text\": \"ASTM A240\"}, \"finish\": null, \"temper\": null, \"tolerance\": null, \"customer_part_no\": null, \"drawing_ref\": null, \"requirements\": []}",
+ "tokens_in": 2332,
+ "tokens_out": 507
+}

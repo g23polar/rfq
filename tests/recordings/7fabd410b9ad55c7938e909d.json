@@ -1,0 +1,6 @@
+{
+ "model": "anthropic/claude-sonnet-5",
+ "output": "{\n  \"material\": null,\n  \"grade\": {\"value\": \"A36\", \"unit\": null, \"source_text\": \"A36 plate\"},\n  \"form\": {\"value\": \"plate\", \"unit\": null, \"source_text\": \"A36 plate\"},\n  \"thickness\": null,\n  \"gauge\": null,\n  \"width\": null,\n  \"length\": null,\n  \"diameter\": null,\n  \"wall\": null,\n  \"unlabeled_dimensions\": [\n    {\"value\": \"1/4\", \"unit\": \"in\", \"source_text\": \"1/4 in\"},\n    {\"value\": \"48\", \"unit\": \"in\", \"source_text\": \"48 in\"},\n    {\"value\": \"96\", \"unit\": \"in\", \"source_text\": \"96 in\"}\n  ],\n  \"quantity\": {\"value\": \"10\", \"unit\": \"ea\", \"source_text\": \"10 ea\"},\n  \"standard\": {\"value\": \"ASTM A36\", \"unit\": null, \"source_text\": \"ASTM A36\"},\n  \"finish\": null,\n  \"temper\": null,\n  \"tolerance\": null,\n  \"customer_part_no\": null,\n  \"drawing_ref\": null,\n  \"requirements\": []\n}",
+ "tokens_in": 2327,
+ "tokens_out": 1039
+}
