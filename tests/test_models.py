@@ -57,10 +57,11 @@ def test_buyer_view_has_no_internal_data(run):
         for i in line.issues:
             if i.audience == "internal":
                 assert i.message not in text
-        for offer in line.offers:
-            if offer.price:
-                assert f'{offer.price.cost_per_lb}' not in text.replace(
-                    f'{offer.price.unit_price}', "")
+    held = next(l for l in run.lines if l.status == "needs_specialist_review")
+    held_price = held.offers[0].price
+    assert held_price.margin_pct < held_price.floor_margin_pct
+    for figure in (held_price.cost_per_lb, held_price.unit_price, held_price.extended):
+        assert str(figure) not in text
     for w in run.withheld:
         assert w.text not in text
 

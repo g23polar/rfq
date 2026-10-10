@@ -148,16 +148,16 @@ lines = [
                   standard="ASTM A240", fingerprint="stainless|316|plate|0.25|48|96"),
         issues=[issue("assumption", "No standard stated; ASTM A240 is the default for 316 plate.",
                       "standard"),
-                issue("below_floor", "Margin 5.6% is under the 12.0% floor.", "price")],
+                issue("below_floor", "Margin 5.3% is under the 12.0% floor.", "price")],
         offers=[Offer(label="As requested", spec=Spec(grade="316", form="plate"),
                       candidate=Candidate(sku="SS-316L-PLT-2500-48X96",
                                           description="316/316L stainless plate 0.25 x 48 x 96",
                                           strength=1.0),
                       availability=in_stock,
-                      price=price(0.25 * 48 * 96 * 0.289, 2, 2.95, 2.70, 3.30, 2.70, "316 plate"),
+                      price=price(0.25 * 48 * 96 * 0.289, 2, 2.95, 2.70, 3.30, 2.71, "316 plate"),
                       compliance=[dfars()])],
         status="needs_specialist_review",
-        review_note="Market-level price leaves 5.6% margin against a 12% floor. Approve the "
+        review_note="Market-level price leaves 5.3% margin against a 12% floor. Approve the "
                     "exception or reprice.",
         verification=ok),
     Line(

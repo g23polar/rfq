@@ -23,7 +23,7 @@ Section 16 (demo data), MT-3 (cross-reference table), MT-6 (reference data for t
 | `src/rfq/data/benchmarks.csv` | One row per grade and form family: `low`, `mid`, `high` in $/lb, `source` ("synthetic"), `as_of` |
 | `src/rfq/data/reference.json` | Gauge-to-thickness by material, densities, abbreviations and shorthand (SS, CRS, HRP&O, AL, ga, dia, sch), default standard by grade and form, common grades by material and form (for missing-grade alternates), substitution rules, standard sheet sizes |
 | `src/rfq/data/rules.json` | Pricing rules: target position, margin floor, validity days; DFARS qualifying countries |
-| `src/rfq/reference.py` | Loaders returning the typed shapes from task 01 |
+| `src/rfq/reference.py` | Row shapes for the catalog, cross-references and rules (this task owns them), and their loaders. Benchmarks load into the `Benchmark` shape from task 01 |
 | `scripts/export_kb.py` → `out/knowledge_base.md` | The reference tables as readable prose and tables, for upload in task 17 |
 
 Benchmarks are keyed by grade and form, not material and form: 304 and 316 cannot share one range.

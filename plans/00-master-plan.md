@@ -60,7 +60,7 @@ Statuses: Not started, In progress, Blocked, Done. Update this table when a task
 
 | # | Task | Owner | Status | Depends on | Spec requirements (M) | Stretch in this task (S) |
 |---|---|---|---|---|---|---|
-| 01 | [Contracts and skeleton](01-contracts-and-skeleton.md) | Claude | In progress | none | all (shared shapes) | none |
+| 01 | [Contracts and skeleton](01-contracts-and-skeleton.md) | Claude | Done | none | all (shared shapes) | none |
 | 02 | [Reference data and catalog](02-reference-data-and-catalog.md) | Unassigned | Not started | 01 | Section 16, MT-3, MT-6 | Surcharge table, pipe sizes |
 | 03 | [Fixtures and golden set](03-fixtures-and-golden-set.md) | Unassigned | Not started | 01, 02 | QA-1, section 16 | Spreadsheet fixture |
 | 04 | [Intake and segmentation](04-intake.md) | Unassigned | Not started | 01, 07 | IN-1, IN-3 to IN-6 | IN-1 spreadsheet, IN-2, IN-7 |
