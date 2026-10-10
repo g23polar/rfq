@@ -62,7 +62,7 @@ Statuses: Not started, In progress, Blocked, Done. Update this table when a task
 |---|---|---|---|---|---|---|
 | 01 | [Contracts and skeleton](01-contracts-and-skeleton.md) | Claude | Done | none | all (shared shapes) | none |
 | 02 | [Reference data and catalog](02-reference-data-and-catalog.md) | Claude | Done | 01 | Section 16, MT-3, MT-6 | Surcharge table, pipe sizes |
-| 03 | [Fixtures and golden set](03-fixtures-and-golden-set.md) | Unassigned | Not started | 01, 02 | QA-1, section 16 | Spreadsheet fixture |
+| 03 | [Fixtures and golden set](03-fixtures-and-golden-set.md) | Claude | Done | 01, 02 | QA-1, section 16 | Spreadsheet fixture |
 | 04 | [Intake and segmentation](04-intake.md) | Unassigned | Not started | 01, 07 | IN-1, IN-3 to IN-6 | IN-1 spreadsheet, IN-2, IN-7 |
 | 05 | [Safety screen](05-safety-screen.md) | Unassigned | Not started | 01, 07 | SF-1 to SF-3 | none |
 | 06 | [Interpret](06-line-reading.md) | Unassigned | Not started | 01, 07 | RD-1 to RD-4 | none |

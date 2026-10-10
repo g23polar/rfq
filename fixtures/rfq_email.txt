@@ -1,0 +1,45 @@
+From: Dana Whitfield <dwhitfield@acmefab.example>
+To: quotes@rudco.example
+Date: Fri, 9 Oct 2026 08:42:00 -0400
+Subject: RFQ 2026-1147 - sheet, bar and plate
+
+Hi team,
+
+Please quote the following for our Newark shop. Need pricing by Wed Oct 14.
+
+1. 304 SS sheet 16ga 4x8 - 10 ea
+2. Stainless 304, 0.060 in, 48 x 96 - 6 ea
+3. Stainless sheet 16ga 4x8 - 12 ea
+All material DFARS compliant
+4. ACME-PN 88213 - 20 ea
+5. 316 SS round bar 1-1/2" dia x 12 ft - 4 ea
+6. 316 SS plate 1/4 x 48 x 96 - 2 ea
+
+Delivery FOB our dock, Newark NJ. Please send your best price.
+
+Thanks,
+Dana Whitfield
+Purchasing Manager | Acme Fabrication
+Cell 212-555-0148
+Office 973-555-0102
+
+CONFIDENTIALITY NOTICE: This e-mail and any attachments are intended only for the named
+recipient and may contain confidential information. If you received it in error, please
+delete it and notify the sender.
+
+-----Original Message-----
+From: RudCo Quotes <quotes@rudco.example>
+Sent: Tuesday, September 15, 2026 2:10 PM
+To: Dana Whitfield <dwhitfield@acmefab.example>
+Subject: RE: RFQ 2026-1098
+
+Dana, our quote Q-55120 is below.
+
+1. 304 SS sheet 14ga 4x8 - 8 ea @ $68.40 ea
+2. 1018 CRS rd bar 1" dia x 12 ft - 10 ea @ $54.10 ea
+
+Valid 7 days. Thanks for the opportunity.
+
+> On Mon, Sep 14, 2026 at 4:55 PM Dana Whitfield wrote:
+> Please quote 304 SS sheet 14ga 4x8 qty 8 and 1018 rd bar 1" x 12' qty 10.
+> Thanks, Dana

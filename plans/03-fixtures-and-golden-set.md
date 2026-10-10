@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Not started |
+| **Status** | Done |
 | **Depends on** | 01, 02 |
 | **Unblocks** | 16, and gives 04 to 12 realistic inputs |
 
@@ -47,6 +47,19 @@ QA-1, section 16, and the M cases of the edge-case catalogue (section 12).
 The track's two example strings carry no quantity, so the fixture adds one to each ("10 ea"); without it they would stop at "needs buyer input".
 
 The golden set also needs lines for U1 (fraction forms), U4 (gauge by material), U6 (dimension order), M5 (default standard), P1 (MTR), P3 (line overrides header), P5 (unverifiable requirement), X1 (exact match) and X3 (tie).
+
+## As built
+
+- `uv run python scripts/make_fixtures.py` rebuilds everything; output is byte-stable. Edit the script, not the files. `tests/test_fixtures.py` fails if they drift apart.
+- Dependencies added: `pypdf` (runtime; task 04 reads PDFs with it), `fpdf2` and `openpyxl` (dev). Task 04's spreadsheet intake will need `openpyxl` moved to runtime.
+- Customers: the email is from Acme Fabrication (DFARS note); the PDF from Brightline Manufacturing (MTRs required for all items, in the notes below the table). The hidden instruction is white 4 pt text in the PDF footer.
+- The PDF text layer extracts one row per line as `<line> <qty> <uom> <description>`; golden `text` for PDF lines uses that form.
+- `golden.jsonl` has 29 records: 7 from the email (including the DFARS line), 8 from the PDF, 14 standalone. Each record: `id`, `fixture`, `buyer_line_no`, `case_ids`, `text`, `kind`, `customer`, `rfq_requirements`, `expected` (`status`, `skus`, `spec`, `issue_kinds`), `determinable`, `note`.
+  - `expected.spec` lists only the fields to check; field accuracy compares those.
+  - `expected.skus` is every acceptable item: one per alternate, empty when nothing is priced to the buyer.
+  - `determinable: false` marks lines that warrant a buyer question; a question on any other line is an over-ask.
+- Whole-fixture cases (D1, D2, D10, S1, B1, ...) are in `FIXTURE_CASES` in the script. S2 and S3 are behaviors, tested in task 12, not fixtures.
+- **Open point for task 09:** `pdf-2` ("304 or 304L?") is labeled `quoted_with_alternates` per spec M2, but both options resolve to the same dual-certified item. If task 09 treats dual-certified stock as satisfying both readings, relabel it `quoted_with_assumptions`.
 
 ## Out of scope
 

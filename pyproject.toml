@@ -6,11 +6,16 @@ requires-python = ">=3.12,<3.14"
 dependencies = [
     "openai>=1.40",
     "pydantic>=2.7",
+    "pypdf>=6.20.0",
     "python-dotenv>=1.0",
 ]
 
 [dependency-groups]
-dev = ["pytest>=8"]
+dev = [
+    "fpdf2>=2.8.9",
+    "openpyxl>=3.1.5",
+    "pytest>=8",
+]
 
 [build-system]
 requires = ["hatchling"]
